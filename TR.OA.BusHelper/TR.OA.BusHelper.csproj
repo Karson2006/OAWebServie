@@ -48,5 +48,11 @@
     <Compile Include="OWLBusHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\iTR\iTR.Lib\iTR.Lib.csproj">
+      <Project>{603e8302-8f06-479f-a3f4-adf2a0a2537d}</Project>
+      <Name>iTR.Lib</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

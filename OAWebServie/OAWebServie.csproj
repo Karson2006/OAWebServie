@@ -102,6 +102,14 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\InvoiceApp\InvoiceHelper\InvoiceHelper.csproj">
+      <Project>{ab33bbb0-998f-4161-bc90-42e69bdb10ba}</Project>
+      <Name>InvoiceHelper</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\iTR\iTR.Lib\iTR.Lib.csproj">
+      <Project>{603e8302-8f06-479f-a3f4-adf2a0a2537d}</Project>
+      <Name>iTR.Lib</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TR.OA.BusHelper\TR.OA.BusHelper.csproj">
       <Project>{e0276928-c5db-4c2a-b2dc-c2a84dbe64ad}</Project>
       <Name>TR.OA.BusHelper</Name>

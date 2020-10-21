@@ -41,8 +41,9 @@ namespace TR.OA.BusHelper
         {
             string sql = "", EmployeeeID = "", rowDatas = "",loginName= "", EmployeeeName = "";
             string result = @"<UpdateData><Result>False</Result><Description></Description></UpdateData>";
-            
+
             #region 参数定义
+            string formID= ""; //申请日期
             string field0003 = ""; //申请日期	
             string field0006 = "";  //单号
             string field0007 = "";  //成本中心	
@@ -102,6 +103,7 @@ namespace TR.OA.BusHelper
                                             <column name=""是否有发票""><value>0</value></column>
                                             <column name=""成本中心_归档""><value>{4}</value></column>
                                             <column name=""YRB发起""><value>1</value></column>
+                                            <column name=""InvoiceMain_ID""><value>{22}</value></column>
                                             </values>
                                             <subForms>
                                             <subForm>
@@ -218,16 +220,20 @@ namespace TR.OA.BusHelper
                 node = doc.SelectSingleNode("UpdateData/field0022");
                 if (node != null)
                     field0022 = node.InnerText.Trim();
+                //InvoiceMain_ID
+                node = doc.SelectSingleNode("UpdateData/formID");
+                if (node != null && node.InnerText.Trim().Length > 0)
+                    formID = node.InnerText.Trim();
+                else
+                    throw new Exception("formID");
 
                 //申请金额
                 node = doc.SelectSingleNode("UpdateData/field0023");
-                if (node != null)
+                if (node != null && node.InnerText.Trim().Length>0)
                     field0023 = node.InnerText.Trim();
                 else
                     throw new Exception("申请金额不能为空");
-                if (field0023.Trim().Length == 0)
-                    throw new Exception("申请金额不能为空");
-
+                
                 //报销金额
                 node = doc.SelectSingleNode("UpdateData/field0024");
                 if (node != null)
@@ -282,7 +288,7 @@ namespace TR.OA.BusHelper
                     throw new Exception("分摊医院不能重复");
 
                 formData = string.Format(formData, EmployeeeID, field0003, field0024, field0006, field0007,field0010, field0011, field0012, field0013, field0017, field0018, field0019,
-                    field0020, field0021, field0022, field0023, field0025, field0031, field0035,  -1, field0045, rowDatas);
+                    field0020, field0021, field0022, field0023, field0025, field0031, field0035,  -1, field0045, rowDatas, formID);
 
                 //doc.LoadXml(formData)
 

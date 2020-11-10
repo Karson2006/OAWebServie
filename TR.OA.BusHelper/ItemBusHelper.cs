@@ -19,17 +19,19 @@ namespace TR.OA.BusHelper
 
         public string GetItemList(string xmlString)
         {
-            string sql = "", result = "",EmployeeeID="";
+            string sql = "", result = "",ClassID="";
             XmlDocument doc = new XmlDocument();
             doc.LoadXml(xmlString);
-            XmlNode node = doc.SelectSingleNode("GetList/EmployeeID");
+            XmlNode node = doc.SelectSingleNode("GetList/ClassID");
             if (node != null)
-                EmployeeeID = node.InnerText;
+                ClassID = node.InnerText;
 
-            sql = @" Select ID,field0001,field0002,field0004,field0009,field0012,field0020,field0018,field0019,field0015,field0013
-                          From v3x.dbo.formmain_6185
-                          Where field0016 = {0}";
-            sql = string.Format(sql, EmployeeeID);
+            sql = @"Select  field0001 As FNumber, field0008 AS FName
+                    From v3x.dbo.formmain_2894
+                    Where field0002 ='-4875734478274671070'  and field0005='{0}'
+                    Order by field0001 ASC";
+
+            sql = string.Format(sql, ClassID);
             runner = new SQLServerHelper();
             DataTable dt = runner.ExecuteSql(sql);
             result = iTR.Lib.Common.DataTableToXml(dt, "GetList","","List");

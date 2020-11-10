@@ -70,6 +70,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="WorkflowService.asmx" />
     <Content Include="ItemService.asmx" />
     <Content Include="FinaceAppService.asmx" />
     <Content Include="OWLAppService.asmx" />
@@ -77,6 +78,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common.cs" />
+    <Compile Include="WorkflowService.asmx.cs">
+      <DependentUpon>WorkflowService.asmx</DependentUpon>
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="ItemService.asmx.cs">
       <DependentUpon>ItemService.asmx</DependentUpon>
       <SubType>Component</SubType>

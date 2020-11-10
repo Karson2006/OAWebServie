@@ -34,6 +34,8 @@ namespace TR.OA.BusHelper
             result = iTR.Lib.Common.DataTableToXml(dt, "GetList","","List");
             return result;
         }
+
+
         #endregion
 
         #region SubmitEntertainmentExpendForm
@@ -197,15 +199,17 @@ namespace TR.OA.BusHelper
                 //计划日期
                 node = doc.SelectSingleNode("UpdateData/field0019");
                 if (node != null)
-                    field0019 = node.InnerText.Trim();
+                    field0019 = node.InnerText.Trim().Substring(0,10);
                 //招待日期
-                if (field0031 == "0")
+                if (field0031 == "1")
                     field0018 = field0019;
                 else
                 {
                     node = doc.SelectSingleNode("UpdateData/field0018");
-                    if (node != null)
-                        field0018 = node.InnerText.Trim();
+                    if (node != null &&  node.InnerText.Trim().Length >0)
+                        field0018 = node.InnerText.Trim().Substring(0,10);
+                    else
+                        throw new Exception("不按计划进行时，招待费日期不能为空");
                 }
                 //预计人数
                 node = doc.SelectSingleNode("UpdateData/field0020");
@@ -225,7 +229,7 @@ namespace TR.OA.BusHelper
                 if (node != null && node.InnerText.Trim().Length > 0)
                     formID = node.InnerText.Trim();
                 else
-                    throw new Exception("formID");
+                    throw new Exception("formID不能为空");
 
                 //申请金额
                 node = doc.SelectSingleNode("UpdateData/field0023");
@@ -305,6 +309,7 @@ namespace TR.OA.BusHelper
             }
             return result;
         }
+
         
         #endregion
 

@@ -83,5 +83,15 @@ namespace TR.OAWebServie
             FileLogger.WriteLog(logID + "|End:" + result, 1, "OAWebService", "SubmitEntertainmentExpendForm", "DataService");
             return result;
         }
+        [WebMethod]
+        public string SubmitEntertainmentExpensesFormJson(string JsonMessage)
+        {
+            FileLogger.WriteLog("Json："+JsonMessage, 1, "OAWebService", "SubmitEntertainmentExpendForm", "DataService");
+            string xmlString = iTR.Lib.Common.Json2XML(JsonMessage, "UpdateData");
+            FileLogger.WriteLog("XML："+ xmlString, 1, "OAWebService", "SubmitEntertainmentExpendForm", "DataService");
+            string result = SubmitEntertainmentExpensesForm(xmlString);
+            result = iTR.Lib.Common.XML2Json(result, "UpdateData");
+            return result;
+        }
     }
 }

@@ -26,10 +26,20 @@ namespace TR.OA.BusHelper
             if (node != null)
                 ClassID = node.InnerText;
 
-            sql = @"Select  field0001 As FNumber, field0008 AS FName
+            if (ClassID.Trim().Length < 19)
+            {
+                sql = @"Select  field0001 As FNumber, field0008 AS FName
                     From v3x.dbo.formmain_2894
                     Where field0002 ='-4875734478274671070'  and field0005='{0}'
                     Order by field0001 ASC";
+            }
+            else
+            {
+                sql = @" Select ID AS FNumber, SHOWVALUE AS FName
+                        From v3x.dbo.CTP_ENUM_ITEM
+                        Where REF_ENUMID = '{0}'
+                        Order by SORTNUMBER ASc";
+            }
 
             sql = string.Format(sql, ClassID);
             runner = new SQLServerHelper();

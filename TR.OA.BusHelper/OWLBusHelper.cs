@@ -38,6 +38,30 @@ namespace TR.OA.BusHelper
 
         #endregion
 
+        #region GeActivityExpendList
+        public string GeActivityExpendList(string xmlString)
+        {
+            string sql = "", result = "", EmployeeeID = "";
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml(xmlString);
+            XmlNode node = doc.SelectSingleNode("GetList/EmployeeID");
+            if (node != null)
+                EmployeeeID = node.InnerText;
+            else
+                throw new Exception("EmployeeID节点不存在");
+
+            sql = @" Select field0001, field0002,field0004,field0006,field0009,field0011,field0012,field0013,field0015,field0018,field0020,field0021,field0024,field0023
+                     from v3x.dbo.formmain_6187 Where field0016 = {0}";
+            sql = string.Format(sql, EmployeeeID);
+            runner = new SQLServerHelper();
+            DataTable dt = runner.ExecuteSql(sql);
+            result = iTR.Lib.Common.DataTableToXml(dt, "GetList", "", "List");
+            return result;
+        }
+
+
+        #endregion
+
         #region SubmitEntertainmentExpendForm
         public string SubmitEntertainmentExpendForm(string xmlString)
         {

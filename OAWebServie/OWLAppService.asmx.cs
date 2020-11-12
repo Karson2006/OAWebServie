@@ -93,5 +93,43 @@ namespace TR.OAWebServie
             result = iTR.Lib.Common.XML2Json(result, "UpdateData");
             return result;
         }
+
+        #region GetActivityExpensesList
+        [WebMethod]
+        public string GetActivityExpensesList(string xmlMessage)
+        {
+            string result = "<GetList>" +
+                          "<Result>False</Result>" +
+                          "<Description></Description></GetList>";
+            string logID = Guid.NewGuid().ToString();
+            try
+            {
+                FileLogger.WriteLog(logID + "|Start:" + xmlMessage, 1, "OAWebService", "GetActivityExpensesList", "DataService");
+
+                if (Common.CheckAuthCode("GetList", xmlMessage))
+                {
+                    OWLBusHelper obj = new OWLBusHelper();
+                    result = obj.GeActivityExpendList(xmlMessage);
+                }
+            }
+            catch (Exception err)
+            {
+                result = "<GetList>" +
+                         "<Result>False</Result>" +
+                         "<Description>" + err.Message + "</Description></GetList>";
+            }
+            FileLogger.WriteLog(logID + "|End:" + result, 1, "OAWebService", "GetActivityExpensesList", "DataService");
+            return result;
+        }
+        [WebMethod]
+        public string GetActivityExpensesListJson(string JsonMessage)
+        {
+            string xmlString = iTR.Lib.Common.Json2XML(JsonMessage, "GetList");
+            string result = GetActivityExpensesList(xmlString);
+            result = iTR.Lib.Common.XML2Json(result, "GetList");
+            return result;
+        }
+
+        #endregion
     }
 }

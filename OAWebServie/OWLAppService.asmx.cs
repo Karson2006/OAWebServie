@@ -131,5 +131,93 @@ namespace TR.OAWebServie
         }
 
         #endregion
+
+
+
+        #region 提交学术费用单
+
+        [WebMethod]
+        public string SubmitAcademicExpensesFormJson(string JsonMessage)
+        {
+            FileLogger.WriteLog("Json：" + JsonMessage, 1, "OAWebService", "SubmitAcademicExpensesFormJson", "DataService");
+            string xmlString = iTR.Lib.Common.Json2XML(JsonMessage, "UpdateData");
+            FileLogger.WriteLog("XML：" + xmlString, 1, "OAWebService", "SubmitAcademicExpensesFormJson", "DataService");
+            string result = SubmitAcademicExpensesForm(xmlString);
+            result = iTR.Lib.Common.XML2Json(result, "UpdateData");
+            return result;
+        }
+        /// <summary>
+        /// 提交学术费用单
+        /// </summary>
+        /// <param name="xmlMessage"></param>
+        /// <returns></returns>
+        [WebMethod]
+        public string SubmitAcademicExpensesForm(string xmlMessage)
+        {
+            string result = "<UpdateData>" +
+                          "<Result>False</Result>" +
+                          "<Description></Description></UpdateData>";
+            string logID = Guid.NewGuid().ToString();
+            try
+            {
+                FileLogger.WriteLog(logID + "|Start:" + xmlMessage, 1, "OAWebService", "SubmitAcademicExpensesForm", "DataService");
+
+                if (Common.CheckAuthCode("SubmitPaymentForm", xmlMessage))
+                {
+                    OWLBusHelper obj = new OWLBusHelper();
+                    result = obj.SubmitAcademicExpensesForm(xmlMessage);
+                }
+            }
+            catch (Exception err)
+            {
+                result = "<UpdateData>" +
+                         "<Result>False</Result>" +
+                         "<Description>" + err.Message + "</Description></UpdateData>";
+            }
+            FileLogger.WriteLog(logID + "|End:" + result, 1, "OAWebService", "SubmitAcademicExpensesForm", "DataService");
+            return result;
+        }
+
+        #endregion
+
+
+        #region  上传表单附件
+        [WebMethod]
+        public string UploadFile(string callType, string xmlMessage)
+        {
+            string result = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
+                           "<" + callType + ">" +
+                           "<Result>False</Result>" +
+                           "<Description></Description></" + callType + ">";
+            string logID = Guid.NewGuid().ToString();
+            try
+            {
+                //     FileLogger.WriteLog(logID + "|Start:" + xmlMessage, 1, "", callType);
+                if (Common.CheckAuthCode(callType, xmlMessage))
+                {
+                    OWLBusHelper regApp = new OWLBusHelper();
+                    result = regApp.UploadFile(xmlMessage);
+                }
+            }
+            catch (Exception err)
+            {
+                result = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
+                          "<" + callType + ">" +
+                          "<Result>False</Result>" +
+                          "<Description>" + err.Message + "</Description></" + callType + ">";
+            }
+            //  FileLogger.WriteLog(logID + "|End:" + result, 1, "", callType);
+            return result;
+        }
+
+        [WebMethod]
+        public string UploadFileJson(string callType, string JsonMessage)
+        {
+            string xmlString = iTR.Lib.Common.Json2XML(JsonMessage, "UploadFile");
+            string result = UploadFile(callType, xmlString);
+            result = iTR.Lib.Common.XML2Json(result, "UploadFile");
+            return result;
+        }
+        #endregion
     }
 }

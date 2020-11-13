@@ -11,13 +11,13 @@ namespace TR.OA.BusHelper
     {
         private SQLServerHelper runner = null;
         public OWLBusHelper()
-        { 
+        {
 
         }
         #region GetEntertainmentExpendList
         public string GetEntertainmentExpendList(string xmlString)
         {
-            string sql = "", result = "",EmployeeeID="";
+            string sql = "", result = "", EmployeeeID = "";
             XmlDocument doc = new XmlDocument();
             doc.LoadXml(xmlString);
             XmlNode node = doc.SelectSingleNode("GetList/EmployeeID");
@@ -32,7 +32,7 @@ namespace TR.OA.BusHelper
             sql = string.Format(sql, EmployeeeID);
             runner = new SQLServerHelper();
             DataTable dt = runner.ExecuteSql(sql);
-            result = iTR.Lib.Common.DataTableToXml(dt, "GetList","","List");
+            result = iTR.Lib.Common.DataTableToXml(dt, "GetList", "", "List");
             return result;
         }
 
@@ -66,11 +66,11 @@ namespace TR.OA.BusHelper
         #region SubmitEntertainmentExpendForm
         public string SubmitEntertainmentExpendForm(string xmlString)
         {
-            string sql = "", EmployeeeID = "", rowDatas = "",loginName= "", EmployeeeName = "";
+            string sql = "", EmployeeeID = "", rowDatas = "", loginName = "", EmployeeeName = "";
             string result = @"<UpdateData><Result>False</Result><Description></Description></UpdateData>";
 
             #region 参数定义
-            string formID= ""; //申请日期
+            string formID = ""; //申请日期
             string field0003 = ""; //申请日期	
             string field0006 = "";  //单号
             string field0007 = "";  //成本中心	
@@ -224,15 +224,15 @@ namespace TR.OA.BusHelper
                 //计划日期
                 node = doc.SelectSingleNode("UpdateData/field0019");
                 if (node != null)
-                    field0019 = node.InnerText.Trim().Substring(0,10);
+                    field0019 = node.InnerText.Trim().Substring(0, 10);
                 //招待日期
                 if (field0031 == "1")
                     field0018 = field0019;
                 else
                 {
                     node = doc.SelectSingleNode("UpdateData/field0018");
-                    if (node != null &&  node.InnerText.Trim().Length >0)
-                        field0018 = node.InnerText.Trim().Substring(0,10);
+                    if (node != null && node.InnerText.Trim().Length > 0)
+                        field0018 = node.InnerText.Trim().Substring(0, 10);
                     else
                         throw new Exception("不按计划进行时，招待费日期不能为空");
                 }
@@ -258,11 +258,11 @@ namespace TR.OA.BusHelper
 
                 //申请金额
                 node = doc.SelectSingleNode("UpdateData/field0023");
-                if (node != null && node.InnerText.Trim().Length>0)
+                if (node != null && node.InnerText.Trim().Length > 0)
                     field0023 = node.InnerText.Trim();
                 else
                     throw new Exception("申请金额不能为空");
-                
+
                 //报销金额
                 node = doc.SelectSingleNode("UpdateData/field0024");
                 if (node != null)
@@ -300,9 +300,9 @@ namespace TR.OA.BusHelper
                 foreach (XmlNode row in nodes)
                 {
                     if (row["field0043"].InnerText.Trim().Length > 0)
-                       field0039 = row["field0043"].InnerText.Trim();
+                        field0039 = row["field0043"].InnerText.Trim();
                     else
-                       field0039 = row["field0044"].InnerText.Trim();
+                        field0039 = row["field0044"].InnerText.Trim();
                     if (!hospitalList.ContainsKey(field0039))
                         hospitalList.Add(field0039, row["field0040"].InnerText);
 
@@ -312,25 +312,25 @@ namespace TR.OA.BusHelper
                 }
                 if (hospitalList.ContainsKey("OA_19888"))
                     throw new Exception("费用不能分摊到【跨区跨院活动】，请选择具体医院");
-                
-                if(nodes.Count > hospitalList.Count  )
+
+                if (nodes.Count > hospitalList.Count)
                     throw new Exception("分摊医院不能重复");
 
-                formData = string.Format(formData, EmployeeeID, field0003, field0024, field0006, field0007,field0010, field0011, field0012, field0013, field0017, field0018, field0019,
-                    field0020, field0021, field0022, field0023, field0025, field0031, field0035,  -1, field0045, rowDatas, formID);
+                formData = string.Format(formData, EmployeeeID, field0003, field0024, field0006, field0007, field0010, field0011, field0012, field0013, field0017, field0018, field0019,
+                    field0020, field0021, field0022, field0023, field0025, field0031, field0035, -1, field0045, rowDatas, formID);
 
                 //doc.LoadXml(formData)
 
                 sql = @"Insert Into DataService.dbo.OATask([FTemplateCode],[FSenderLoginName],[FEmployeeCode],[FEmployeeName],[FSubject],[FData])
 	                     Values('O202001','{0}','{1}','{2}','{3}' , '{4}')";
-                sql = string.Format(sql, loginName, field0010, EmployeeeName,"招待费报销-YRB-"+ EmployeeeName+ "-"+ DateTime.Now.ToString(), formData);
+                sql = string.Format(sql, loginName, field0010, EmployeeeName, "招待费报销-YRB-" + EmployeeeName + "-" + DateTime.Now.ToString(), formData);
                 runner.ExecuteSqlNone(sql);
-               
+
                 result = "<UpdateData><Result>True</Result><Description></Description></UpdateData>";
             }
             catch (Exception err)
             {
-                result = "<UpdateData><Result>False</Result><Description>"+ err.Message+"</Description></UpdateData>";
+                result = "<UpdateData><Result>False</Result><Description>" + err.Message + "</Description></UpdateData>";
             }
             return result;
         }
@@ -365,198 +365,200 @@ namespace TR.OA.BusHelper
                 string field0023 = "";  //报销金额
                 string field0024 = "";  //申请单单号
                 string field0025 = "";  //医院
+                string field0043 = "";  //规模
                 string field0044 = "";  //是否按计划 
-                string field0047 = "";//个人报销金额==支付金额
+                string field0047 = "";  //个人报销金额
                 string field0053 = "";  //可用额
                 string field0054 = "";  //在途额
-                string field0055 = "";  //财务审批标志
                 string field0063 = "";  //费用来源
+                string field0065 = "";  //活动类型
                 string field0067 = "";  //成本中心_归档
-                string bankRows = "", hospitalRows = "", attRows = "";
+                string bankRows = "", hospitalRows = "";
                 #endregion
 
- 
-                    XmlDocument doc = new XmlDocument();
-                    doc.LoadXml(xmlString);
 
-                    #region xml取值
+                XmlDocument doc = new XmlDocument();
+                doc.LoadXml(xmlString);
 
-                    XmlNode node = doc.SelectSingleNode("UpdateData/field0002");
+                #region xml取值
+
+                XmlNode node = doc.SelectSingleNode("UpdateData/field0002");
+                if (node != null && node.InnerText.Trim().Length > 0)
+                    EmployeeeID = node.InnerText;
+                else
+                    throw new Exception("申请人field0002节点不存在或为空");
+                node = doc.SelectSingleNode("UpdateData/field0006");
+                if (node != null && node.InnerText.Trim().Length > 0)
+                    field0006 = node.InnerText.Trim();
+                else
+                    throw new Exception("单号不能为空");
+                //是否按计划
+                node = doc.SelectSingleNode("UpdateData/field0044");
+                if (node != null)
+                    field0044 = node.InnerText.Trim().Length > 0 ? node.InnerText : "1";
+
+                //计划日期
+                node = doc.SelectSingleNode("UpdateData/field0019");
+                if (node != null)
+                    field0019 = node.InnerText.Trim().Substring(0, 10);
+
+                //招待日期
+                if (field0044 == "1")
+                    field0018 = field0019;
+                else
+                {
+                    node = doc.SelectSingleNode("UpdateData/field0018");
                     if (node != null && node.InnerText.Trim().Length > 0)
-                        EmployeeeID = node.InnerText;
+                        field0018 = node.InnerText.Trim().Substring(0, 10);
                     else
-                        throw new Exception("申请人field0002节点不存在或为空");
-                    node = doc.SelectSingleNode("UpdateData/field0006");
-                    if (node != null && node.InnerText.Trim().Length > 0)
-                        field0006 = node.InnerText.Trim();
-                    else
-                        throw new Exception("单号不能为空");
-                    //是否按计划
-                    node = doc.SelectSingleNode("UpdateData/field0044");
-                    if (node != null)
-                        field0044 = node.InnerText.Trim().Length > 0 ? node.InnerText : "1";
+                        throw new Exception("不按计划进行时，学术费日期不能为空");
+                }
 
-                    //计划日期
-                    node = doc.SelectSingleNode("UpdateData/field0019");
-                    if (node != null)
-                        field0019 = node.InnerText.Trim().Substring(0, 10);
+                //实际人数
+                node = doc.SelectSingleNode("UpdateData/field0020");
+                if (node != null)
+                    field0020 = node.InnerText.Trim();
 
-                    //招待日期
-                    if (field0044 == "1")
-                        field0018 = field0019;
-                    else
-                    {
-                        node = doc.SelectSingleNode("UpdateData/field0018");
-                        if (node != null && node.InnerText.Trim().Length > 0)
-                            field0018 = node.InnerText.Trim().Substring(0, 10);
-                        else
-                            throw new Exception("不按计划进行时，学术费日期不能为空");
-                    }
+                //事由
+                node = doc.SelectSingleNode("UpdateData/field0021");
+                if (node != null)
+                    field0021 = node.InnerText.Trim();
+                //InvoiceMain_ID
+                node = doc.SelectSingleNode("UpdateData/formID");
+                if (node != null && node.InnerText.Trim().Length > 0)
+                    formID = node.InnerText.Trim();
+                else
+                    throw new Exception("formID不能为空");
 
-                    //实际人数
-                    node = doc.SelectSingleNode("UpdateData/field0020");
-                    if (node != null)
-                        field0020 = node.InnerText.Trim();
+                //申请金额
+                node = doc.SelectSingleNode("UpdateData/field0022");
+                if (node != null && node.InnerText.Trim().Length > 0)
+                    field0022 = node.InnerText.Trim();
+                else
+                    throw new Exception("申请金额不能为空");
 
-                    //事由
-                    node = doc.SelectSingleNode("UpdateData/field0021");
-                    if (node != null)
-                        field0021 = node.InnerText.Trim();
-                    //InvoiceMain_ID
-                    node = doc.SelectSingleNode("UpdateData/formID");
-                    if (node != null && node.InnerText.Trim().Length > 0)
-                        formID = node.InnerText.Trim();
-                    else
-                        throw new Exception("formID不能为空");
+                //医院
+                node = doc.SelectSingleNode("UpdateData/field0025");
+                if (node != null)
+                    field0025 = node.InnerText.Trim();
 
-                    //申请金额
-                    node = doc.SelectSingleNode("UpdateData/field0022");
-                    if (node != null && node.InnerText.Trim().Length > 0)
-                        field0022 = node.InnerText.Trim();
-                    else
-                        throw new Exception("申请金额不能为空");
+                #endregion
 
-                    //医院
-                    node = doc.SelectSingleNode("UpdateData/field0025");
-                    if (node != null)
-                        field0025 = node.InnerText.Trim();
-
-                    #endregion
-
-                    #region 获取个人资料                    
-                    sql = @"Select t1.ID As FEmployeeID, t1.Code As FEmployeeCode,t1.ORG_DEPARTMENT_ID AS FDeptID, Isnull(t2.field0008,'') As FCostCenter,
+                #region 获取个人资料                    
+                sql = @"Select t1.ID As FEmployeeID, t1.Code As FEmployeeCode,t1.ORG_DEPARTMENT_ID AS FDeptID, Isnull(t2.field0008,'') As FCostCenter,
                             Isnull(t3.field0003,'') As FBank,Isnull(t3.field0005,'') As FAccount,Isnull(t3.field0004,'') As FCommpany,t4.LOGIN_NAME,t1.Name AS FEmployeeName
                             From  v3x.dbo.ORG_MEMBER t1
                             Left Join v3x.dbo.formmain_5499 t2 On t1.ORG_DEPARTMENT_ID= t2.field0002
                             Left Join v3x.dbo.formmain_8130 t3 On t3.field0002= t1.Code
                             Left Join v3x.dbo.ORG_PRINCIPAL t4 On t1.ID= t4.MEMBER_ID 
                             Where  t1.ID='{0}' ";
-                    sql = string.Format(sql, EmployeeeID);
-                    runner = new SQLServerHelper();
-                    DataTable dt = runner.ExecuteSql(sql);
+                sql = string.Format(sql, EmployeeeID);
+                runner = new SQLServerHelper();
+                DataTable dt = runner.ExecuteSql(sql);
 
-                    if (dt.Rows.Count > 0)
-                    {
-                        field0010 = dt.Rows[0]["FEmployeeCode"].ToString();
-                        field0011 = dt.Rows[0]["FDeptID"].ToString();
-                        field0007 = dt.Rows[0]["FCostCenter"].ToString();
-                        field0067 = dt.Rows[0]["FCostCenter"].ToString();
-                        field0012 = dt.Rows[0]["FBank"].ToString();
-                        field0013 = dt.Rows[0]["FAccount"].ToString();
-                        loginName = dt.Rows[0]["LOGIN_NAME"].ToString();
-                        EmployeeeName = dt.Rows[0]["FEmployeeName"].ToString();
-                    }
-                    #endregion
+                if (dt.Rows.Count > 0)
+                {
+                    field0010 = dt.Rows[0]["FEmployeeCode"].ToString();
+                    field0011 = dt.Rows[0]["FDeptID"].ToString();
+                    field0007 = dt.Rows[0]["FCostCenter"].ToString();
+                    field0067 = dt.Rows[0]["FCostCenter"].ToString();
+                    field0012 = dt.Rows[0]["FBank"].ToString();
+                    field0013 = dt.Rows[0]["FAccount"].ToString();
+                    loginName = dt.Rows[0]["LOGIN_NAME"].ToString();
+                    EmployeeeName = dt.Rows[0]["FEmployeeName"].ToString();
+                }
+                #endregion
 
-                    #region 金额判断
+                #region 金额判断
 
 
-                    //读取学术费明细表可用额
-                    sql = @"Select t1.field0006 As field0045,t2.SHOWVALUE AS field0045_Name,Isnull(t1.field0009,0) As field0036,Isnull(t3.field0011,0) As field0017,
+                //读取学术费明细表可用额
+                sql = @"Select t1.field0006 As field0045,t2.SHOWVALUE AS field0045_Name,Isnull(t1.field0009,0) As field0036,Isnull(t3.field0011,0) As field0017,
                             Isnull(t1.field0007,0) As field0056,t1.field0018 AS field0025,Isnull(t1.field0008,0) AS field0037
                             from v3x.dbo.formmain_6185 t1
                             Left Join v3x.dbo.CTP_ENUM_ITEM  t2 On t1.field0006= t2.ID
                             Left Join v3x.dbo.formmain_6180  t3 On t1.field0018= t3.field0001
                             Where t1.field0001='" + field0006 + "'";
-                    dt = runner.ExecuteSql(sql);
-                    if (dt.Rows.Count > 0)
-                    {
-                        //费用来源
-                        field0063 = dt.Rows[0]["field0063"].ToString();
-                        //可用额
-                        field0053 = dt.Rows[0]["field0053"].ToString();
-                        //月度申请总额
-                         field0017 = dt.Rows[0]["field0017"].ToString();
-                        //学术费用明细账已用额
-                        // field0067 = dt.Rows[0]["field0056"].ToString();
-                        //申请单单号
-                        field0024 = dt.Rows[0]["field0024"].ToString();
-                        //在途额
-                        field0054 = dt.Rows[0]["field0054"].ToString();
-                    }
- 
+                dt = runner.ExecuteSql(sql);
+                if (dt.Rows.Count > 0)
+                {
+                    //费用来源
+                    field0063 = dt.Rows[0]["field0063"].ToString();
+                    //可用额
+                    field0053 = dt.Rows[0]["field0053"].ToString();
+                    //月度申请总额
+                    field0017 = dt.Rows[0]["field0017"].ToString();
+                    //学术费用明细账 没有已用额
+                   // field0067 = dt.Rows[0]["field0056"].ToString();
+                    //申请单单号
+                    field0024 = dt.Rows[0]["field0024"].ToString();
+                    //在途额
+                    field0054 = dt.Rows[0]["field0054"].ToString();
+                }
+
 
                 //报销金额
                 node = doc.SelectSingleNode("UpdateData/field0023");
-                    if (node != null)
-                        field0024 = node.InnerText.Trim();
-                    else
-                        throw new Exception("报销金额不能为空");
+                if (node != null)
+                    field0024 = node.InnerText.Trim();
+                else
+                    throw new Exception("报销金额不能为空");
 
-                    if (field0024.Trim().Length == 0)
-                        throw new Exception("报销金额不能为空");
+                if (field0024.Trim().Length == 0)
+                    throw new Exception("报销金额不能为空");
 
-                    if (decimal.Parse(field0023) < decimal.Parse(field0023))
-                        throw new Exception("报销金额不能大于申请金额");
+                if (decimal.Parse(field0023) < decimal.Parse(field0023))
+                    throw new Exception("报销金额不能大于申请金额");
 
-                    if (decimal.Parse(field0017) < decimal.Parse(field0023))
-                        throw new Exception("报销金额不能大于月度可用额");
-                    #endregion
+                if (decimal.Parse(field0017) < decimal.Parse(field0023))
+                    throw new Exception("报销金额不能大于月度可用额");
+                #endregion
 
-                    //赋值申请日期
-                    field0003 = DateTime.Now.ToString("yyyy-MM-dd");
+                //赋值申请日期
+                field0003 = DateTime.Now.ToString("yyyy-MM-dd");
 
-                    #region 分摊医院
+                #region 分摊医院
 
-                    string hosRow = @"<row><column name=""编码_分摊_0""><value>{0}</value></column>
+                string hosRow = @"<row><column name=""编码_分摊_0""><value>{0}</value></column>
                                     <column name=""名称_分摊""><value>{1}</value></column>
                                     <column name=""分摊金额""><value>{2}</value></column>
                                     <column name=""分摊说明""><value>{3}</value></column>
-                                    <column name=""编码_分摊_1""><value>{4}</value></column>
-                                    <column name=""科室_分摊""><value>{5}</value></column>
-                                    <column name=""编码_分摊""><value>{6}</value></column>
+                                    <column name=""编码_分摊_1""><value></value></column>
+                                    <column name=""科室_分摊""><value>{4}</value></column>
+                                    <column name=""编码_分摊""><value>{5}</value></column>
                                     </row>";
-                    XmlNodeList nodes = doc.SelectNodes("UpdateData/HDataRows/hospit");
-                    //分摊医院不能为空
-                    if (nodes.Count == 0)
-                        throw new Exception("分摊医院不能为空");
-                    string field0062 = "";
-                    Dictionary<string, string> verifyList = new Dictionary<string, string>();
-                    foreach (XmlNode row in nodes)
-                    {
-                        if (row["field0056"].InnerText.Trim().Length > 0)
-                            field0062 = row["field0056"].InnerText.Trim();
-                        else
-                            field0062 = row["field0060"].InnerText.Trim();
-                        if (!verifyList.ContainsKey(field0062))
-                            //field0057 名称_分摊	 
-                            verifyList.Add(field0062, row["field0057"].InnerText);
-                        //编码分摊放到最后一个
-                        hosRow = hosRow + string.Format(hosRow, row["field0056"].InnerText, row["field0057"].InnerText,
-                        row["field0058"].InnerText, row["field0059"].InnerText, row["field0060"].InnerText, row["field0061"].InnerText, field0062);
-                    }
+                XmlNodeList nodes = doc.SelectNodes("UpdateData/HDataRows/hospit");
+                //分摊医院不能为空
+                if (nodes.Count == 0)
+                    throw new Exception("分摊医院不能为空");
+                string field0062 = "";
+                Dictionary<string, string> verifyList = new Dictionary<string, string>();
+                foreach (XmlNode row in nodes)
+                {
+                    if (row["field0056"].InnerText.Trim().Length > 0)
+                        field0062 = row["field0056"].InnerText.Trim();
+                    else
+                        field0062 = row["field0062"].InnerText.Trim();
+                    if (!verifyList.ContainsKey(field0062))
+                        //field0057 名称_分摊	 
+                        verifyList.Add(field0062, row["field0057"].InnerText);
+                    //编码分摊放到最后一个
+                    hosRow = hosRow + string.Format(hosRow, row["field0056"].InnerText, row["field0057"].InnerText,
+                    row["field0058"].InnerText, row["field0059"].InnerText,  row["field0061"].InnerText, field0062);
+                }
 
-                    if (verifyList.ContainsKey("OA_19888"))
-                        throw new Exception("费用不能分摊到【跨区跨院活动】，请选择具体医院");
+                if (verifyList.ContainsKey("OA_19888"))
+                    throw new Exception("费用不能分摊到【跨区跨院活动】，请选择具体医院");
 
-                    if (nodes.Count > verifyList.Count)
-                        throw new Exception("分摊医院不能重复");
+                if (nodes.Count > verifyList.Count)
+                    throw new Exception("分摊医院不能重复");
 
+                #endregion
 
-                    #endregion
-
-                    #region  开户行
-                    verifyList.Clear();
+                #region  开户行
+                //个人报销金额小于报销金额有第三方
+                if (int.Parse(field0047)<int.Parse(field0023))
+                {
                     Dictionary<string, string> bankDic = new Dictionary<string, string>();
 
                     string bankRow = @"<row><column name=""收款方""><value>{0}</value></column>
@@ -572,70 +574,71 @@ namespace TR.OA.BusHelper
                     {
                         bankRows = bankRows + string.Format(bankRow, row["field0048"].InnerText, row["field0049"].InnerText, row["field0050"].InnerText, row["field0051"].InnerText);
                         if (!verifyList.ContainsKey(field0062))
-                        //field0057 名称_分摊	 
-                        bankDic.Add(field0062, row["field0049"].InnerText);
+                            //field0057 名称_分摊	 
+                            bankDic.Add(field0062, row["field0049"].InnerText);
                     }
                     if (nodes.Count > bankDic.Count)
                         throw new Exception("开户行及账号不能重复");
-                    #endregion
+                }
 
-                    #region 获取附件
- 
- 
-                  Dictionary<string, string> attDic = new Dictionary<string, string>();
+                #endregion
 
-                    nodes = doc.SelectNodes("UpdateData/ADataRows/data");
-                    
-                    //附件节点不能为空
-                    if (nodes.Count == 0)
-                        throw new Exception("附件不能为空");
-                    string attid = "",attjson="";
-                    foreach (XmlNode row in nodes)
+                #region 获取附件
+
+                Dictionary<string, string> attDic = new Dictionary<string, string>();
+
+                nodes = doc.SelectNodes("UpdateData/ADataRows/data");
+
+                //附件节点不能为空
+                if (nodes.Count == 0)
+                    throw new Exception("附件不能为空");
+                string attid = "", attjson = "";
+                foreach (XmlNode row in nodes)
+                {
+                    attid = "";
+                    switch (row["Type"].ToString().Trim())
                     {
-                        attid = "";
-                        switch (row["Type"].ToString().Trim())
-                        {
-                            case "学术材料": attid = "field0032" ; break;
-                            case "会议议程": attid = "field0033" ; break;
-                            case "会议纪要": attid = "field0034" ; break;
-                            case "课酬附件": attid = "field0035" ; break;
-                            case "会议照片": attid = "field0036" ; break;
-                            case "参会名单": attid = "field0037" ; break;
-                        }
-                        if (!attDic.ContainsValue(attid))
-                        {
+                        case "学术材料": attid = "field0032"; break;
+                        case "会议议程": attid = "field0033"; break;
+                        case "会议纪要": attid = "field0034"; break;
+                        case "课酬附件": attid = "field0035"; break;
+                        case "会议照片": attid = "field0036"; break;
+                        case "参会名单": attid = "field0037"; break;
+                    }
+                    if (!attDic.ContainsValue(attid))
+                    {
                         //FileID做唯一键,不会重复
-                        attDic.Add(row["FileID"].ToString().Trim(),attid);
-                        }
+                        attDic.Add(row["FileID"].ToString().Trim(), attid);
                     }
-                    attjson = JsonConvert.SerializeObject(attDic);
+                }
+                attjson = JsonConvert.SerializeObject(attDic);
 
-                    #region 附件验证
+                #region 附件验证
 
-                    if (!attDic.ContainsValue("field0032"))
-                    {
-                        throw new Exception("缺少学术材料附件");
-                    }
-                    if (!attDic.ContainsValue("field0033"))
-                    {
-                        throw new Exception("缺少会议议程附件");
-                    }
-                    if (!attDic.ContainsValue("field0034"))
-                    {
-                        throw new Exception("缺少会议纪要附件");
-                    }
-                    if (!attDic.ContainsValue("field0036"))
-                    {
-                        throw new Exception("缺少会议照片附件");
-                    }
-                    if (!attDic.ContainsValue("field0037"))
-                    {
-                        throw new Exception("缺少学参会名单附件");
-                    }
+                if (!attDic.ContainsValue("field0032"))
+                {
+                    throw new Exception("缺少学术材料附件");
+                }
+                if (!attDic.ContainsValue("field0033"))
+                {
+                    throw new Exception("缺少会议议程附件");
+                }
+                if (!attDic.ContainsValue("field0034"))
+                {
+                    throw new Exception("缺少会议纪要附件");
+                }
+                if (!attDic.ContainsValue("field0036"))
+                {
+                    throw new Exception("缺少会议照片附件");
+                }
+                if (!attDic.ContainsValue("field0037"))
+                {
+                    throw new Exception("缺少学参会名单附件");
+                }
 
-                    #endregion
+                #endregion
 
-                    #endregion
+                #endregion
 
 
                 #region formdata
@@ -666,14 +669,14 @@ namespace TR.OA.BusHelper
                                     <column name=""课酬附件""><value></value></column>
                                     <column name=""会议照片""><value></value></column>
                                     <column name=""参会名单""><value></value></column>
-                                    <column name=""规模""><value>{field0020}</value></column>
+                                    <column name=""规模""><value>{field0043}</value></column>
                                     <column name=""是否按计划""><value>{field0044}</value></column>
                                     <column name=""费用类型""><value>学术活动费</value></column>
                                     <column name=""个人报销金额""><value>{field0047}</value></column>
                                     <column name=""费用来源""><value>{field0063}</value></column>
                                     <column name=""可用额""><value>{field0053}</value></column>
                                     <column name=""在途额""><value>{field0054}</value></column>
-                                    <column name=""活动类型""><value>{39}</value></column>
+                                    <column name=""活动类型""><value>{field0065}</value></column>
                                     <column name=""是否有发票""><value>0</value></column>
                                     <column name=""YRB发起""><value>1</value></column>
                                     <column name=""成本中心_归档""><value>{field0067}</value></column>

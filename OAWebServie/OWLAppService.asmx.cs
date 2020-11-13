@@ -160,9 +160,9 @@ namespace TR.OAWebServie
             string logID = Guid.NewGuid().ToString();
             try
             {
-                FileLogger.WriteLog(logID + "|Start:" + xmlMessage, 1, "OAWebService", "SubmitAcademicExpensesForm", "DataService");
+                FileLogger.WriteLog(logID + "|Start:" + xmlMessage, 1, "OAWebService", "SubmitActivityExpensesForm", "DataService");
 
-                if (Common.CheckAuthCode("SubmitPaymentForm", xmlMessage))
+                if (Common.CheckAuthCode("UpdateData", xmlMessage))
                 {
                     OWLBusHelper obj = new OWLBusHelper();
                     result = obj.SubmitActivityExpensesForm(xmlMessage);
@@ -174,7 +174,7 @@ namespace TR.OAWebServie
                          "<Result>False</Result>" +
                          "<Description>" + err.Message + "</Description></UpdateData>";
             }
-            FileLogger.WriteLog(logID + "|End:" + result, 1, "OAWebService", "SubmitAcademicExpensesForm", "DataService");
+            FileLogger.WriteLog(logID + "|End:" + result, 1, "OAWebService", "SubmitActivityExpensesForm", "DataService");
             return result;
         }
 

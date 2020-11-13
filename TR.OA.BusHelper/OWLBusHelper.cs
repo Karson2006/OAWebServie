@@ -69,7 +69,7 @@ namespace TR.OA.BusHelper
             string sql = "", EmployeeeID = "", rowDatas = "", loginName = "", EmployeeeName = "";
             string result = @"<UpdateData><Result>False</Result><Description></Description></UpdateData>";
 
-            #region 参数定义
+            #region 参数定义 参考
             string formID = ""; //申请日期
             string field0003 = ""; //申请日期	
             string field0006 = "";  //单号
@@ -94,6 +94,7 @@ namespace TR.OA.BusHelper
             string field0045 = "";  //费用来源
             string field0050 = "";  //成本中心_归档
             string field0056 = "";  //招待费明细账已用额
+
             #endregion
 
             #region FormData
@@ -382,7 +383,7 @@ namespace TR.OA.BusHelper
                 doc.LoadXml(xmlString);
 
                 #region xml取值
-
+                //看到下面的代码不要怀疑自己的眼睛 
                 XmlNode node = doc.SelectSingleNode("UpdateData/field0002");
                 if (node != null && node.InnerText.Trim().Length > 0)
                     EmployeeeID = node.InnerText;
@@ -394,7 +395,8 @@ namespace TR.OA.BusHelper
                 else
                     throw new Exception("单号不能为空");
                 //是否按计划
-                node = doc.SelectSingleNode("UpdateData/field0044");
+                //node = doc.SelectSingleNode("UpdateData/field0044");  
+                node = doc.SelectSingleNode("UpdateData/field0031");
                 if (node != null)
                     field0044 = node.InnerText.Trim().Length > 0 ? node.InnerText : "1";
 
@@ -412,18 +414,21 @@ namespace TR.OA.BusHelper
                     if (node != null && node.InnerText.Trim().Length > 0)
                         field0018 = node.InnerText.Trim().Substring(0, 10);
                     else
-                        throw new Exception("不按计划进行时，学术费日期不能为空");
+                        throw new Exception("不按计划进行时，举办日期不能为空");
                 }
 
                 //实际人数
-                node = doc.SelectSingleNode("UpdateData/field0020");
+                //node = doc.SelectSingleNode("UpdateData/field0020");
+                node = doc.SelectSingleNode("UpdateData/field0021");
                 if (node != null)
                     field0020 = node.InnerText.Trim();
 
                 //事由
-                node = doc.SelectSingleNode("UpdateData/field0021");
+                //node = doc.SelectSingleNode("UpdateData/field0021");
+                node = doc.SelectSingleNode("UpdateData/field0022");
                 if (node != null)
                     field0021 = node.InnerText.Trim();
+
                 //InvoiceMain_ID
                 node = doc.SelectSingleNode("UpdateData/formID");
                 if (node != null && node.InnerText.Trim().Length > 0)
@@ -432,7 +437,8 @@ namespace TR.OA.BusHelper
                     throw new Exception("formID不能为空");
 
                 //申请金额
-                node = doc.SelectSingleNode("UpdateData/field0022");
+                //node = doc.SelectSingleNode("UpdateData/field0022");
+                node = doc.SelectSingleNode("UpdateData/field0009");
                 if (node != null && node.InnerText.Trim().Length > 0)
                     field0022 = node.InnerText.Trim();
                 else
@@ -499,7 +505,8 @@ namespace TR.OA.BusHelper
 
 
                 //报销金额
-                node = doc.SelectSingleNode("UpdateData/field0023");
+                //node = doc.SelectSingleNode("UpdateData/field0023");
+                node = doc.SelectSingleNode("UpdateData/field0035");
                 if (node != null)
                     field0023 = node.InnerText.Trim();
                 else
@@ -536,16 +543,27 @@ namespace TR.OA.BusHelper
                 Dictionary<string, string> verifyList = new Dictionary<string, string>();
                 foreach (XmlNode row in nodes)
                 {
-                    if (row["field0056"].InnerText.Trim().Length > 0)
-                        field0062 = row["field0056"].InnerText.Trim();
+                    //if (row["field0056"].InnerText.Trim().Length > 0)
+                    //    field0062 = row["field0056"].InnerText.Trim();
+                    //else
+                    //    field0062 = row["field0062"].InnerText.Trim();
+                    //if (!verifyList.ContainsKey(field0062))
+                    //    //field0057 名称_分摊	 
+                    //    verifyList.Add(field0062, row["field0057"].InnerText);
+                    ////编码分摊放到最后一个
+                    //hosRow = hosRow + string.Format(hosRow, row["field0056"].InnerText, row["field0057"].InnerText,
+                    //row["field0058"].InnerText, row["field0059"].InnerText,  row["field0061"].InnerText, field0062);
+
+                    if (row["field0024"].InnerText.Trim().Length > 0)
+                        field0062 = row["field0024"].InnerText.Trim();
                     else
-                        field0062 = row["field0062"].InnerText.Trim();
+                        throw new Exception("分摊医院不能为空");
                     if (!verifyList.ContainsKey(field0062))
                         //field0057 名称_分摊	 
-                        verifyList.Add(field0062, row["field0057"].InnerText);
+                        verifyList.Add(field0062, row["field0012"].InnerText);
                     //编码分摊放到最后一个
-                    hosRow = hosRow + string.Format(hosRow, row["field0056"].InnerText, row["field0057"].InnerText,
-                    row["field0058"].InnerText, row["field0059"].InnerText,  row["field0061"].InnerText, field0062);
+                    hosRow = hosRow + string.Format(hosRow, row["field0024"].InnerText, row["field0012"].InnerText,
+                    row["field0058"].InnerText, row["field0042"].InnerText, row["field0061"].InnerText, field0062);
                 }
 
                 if (verifyList.ContainsKey("OA_19888"))
@@ -557,6 +575,13 @@ namespace TR.OA.BusHelper
                 #endregion
 
                 #region  开户行
+
+                //个人报销金额
+                //node = doc.SelectSingleNode("UpdateData/field0047");
+                node = doc.SelectSingleNode("UpdateData/field0023");
+                if (node != null)
+                    field0047 = node.InnerText.Trim();
+
                 //个人报销金额小于报销金额有第三方
                 if (int.Parse(field0047)<int.Parse(field0023))
                 {
@@ -702,7 +727,7 @@ namespace TR.OA.BusHelper
                 #endregion
                 string oaid = Guid.NewGuid().ToString();
                 //插入流程数据
-                sql = $@"Insert Into DataService.dbo.OATask([FOAID],[FTemplateCode],[FSenderLoginName],[FEmployeeCode],[FEmployeeName],[FSubject],[FData],[FFormContentAtt]) Values('{oaid}','O202001','{"zhangsh"}','{""}','{EmployeeeName}','{"学术活动费用支付单-YRB-" + EmployeeeName + "-" + DateTime.Now.ToString()}' , '{formData}','{attjson}')";
+                sql = $@"Insert Into DataService.dbo.OATask([FOAID],[FTemplateCode],[FSenderLoginName],[FEmployeeCode],[FEmployeeName],[FSubject],[FData],[FFormContentAtt]) Values('{oaid}','O202001','{loginName}','{field0010}','{EmployeeeName}','{"学术活动费用支付单-YRB-" + EmployeeeName + "-" + DateTime.Now.ToString()}' , '{formData}','{attjson}')";
                 runner.ExecuteSqlNone(sql);
                 //发起流程
 
@@ -731,7 +756,7 @@ namespace TR.OA.BusHelper
                 string base64String = "", fileName = "", EmployeeID = "", fileSize = "", mimeType = "";
 
                 string path = System.Configuration.ConfigurationManager.AppSettings["Path"];
-                path = DateTime.Now.Year + "\\" + DateTime.Now.Month + "\\" + DateTime.Now.Day;
+                path = path + DateTime.Now.Year + "\\" + DateTime.Now.Month + "\\" + DateTime.Now.Day;
                 XmlDocument doc = new XmlDocument();
                 doc.LoadXml(xmlString);
                 XmlNode vNode = doc.SelectSingleNode(callType + "/Base64String");

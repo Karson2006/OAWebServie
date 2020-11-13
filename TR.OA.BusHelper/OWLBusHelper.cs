@@ -373,6 +373,7 @@ namespace TR.OA.BusHelper
                 string field0063 = "";  //费用来源
                 string field0065 = "";  //活动类型
                 string field0067 = "";  //成本中心_归档
+                string field1000 = "";  //已用额
                 string bankRows = "", hospitalRows = "";
                 #endregion
 
@@ -473,10 +474,10 @@ namespace TR.OA.BusHelper
 
 
                 //读取学术费明细表可用额
-                sql = @"Select t1.field0006 As field0045,t2.SHOWVALUE AS field0045_Name,Isnull(t1.field0009,0) As field0036,Isnull(t3.field0011,0) As field0017,
-                            Isnull(t1.field0007,0) As field0056,t1.field0018 AS field0025,Isnull(t1.field0008,0) AS field0037
-                            from v3x.dbo.formmain_6185 t1
-                            Left Join v3x.dbo.CTP_ENUM_ITEM  t2 On t1.field0006= t2.ID
+                sql = @"Select t1.field0006 As field0063,t2.SHOWVALUE AS field0045_Name,Isnull(t1.field0009,0) As field0053,Isnull(t3.field0011,0) As field0017,
+                            Isnull(t1.field0007,0) As field1000,t1.field0018 AS field0024,Isnull(t1.field0008,0) AS field0054
+                            from v3x.dbo.formmain_6187 t1
+                            Left Join v3x.dbo.CTP_ENUM_ITEM  t2 On t1.field0006= t2.ID  
                             Left Join v3x.dbo.formmain_6180  t3 On t1.field0018= t3.field0001
                             Where t1.field0001='" + field0006 + "'";
                 dt = runner.ExecuteSql(sql);
@@ -488,8 +489,8 @@ namespace TR.OA.BusHelper
                     field0053 = dt.Rows[0]["field0053"].ToString();
                     //月度申请总额
                     field0017 = dt.Rows[0]["field0017"].ToString();
-                    //学术费用明细账 没有已用额
-                   // field0067 = dt.Rows[0]["field0056"].ToString();
+                    //学术费用明细账 已用额
+                    field1000 = dt.Rows[0]["field1000"].ToString();
                     //申请单单号
                     field0024 = dt.Rows[0]["field0024"].ToString();
                     //在途额
@@ -500,14 +501,14 @@ namespace TR.OA.BusHelper
                 //报销金额
                 node = doc.SelectSingleNode("UpdateData/field0023");
                 if (node != null)
-                    field0024 = node.InnerText.Trim();
+                    field0023 = node.InnerText.Trim();
                 else
                     throw new Exception("报销金额不能为空");
 
-                if (field0024.Trim().Length == 0)
+                if (field0023.Trim().Length == 0)
                     throw new Exception("报销金额不能为空");
 
-                if (decimal.Parse(field0023) < decimal.Parse(field0023))
+                 if (decimal.Parse(field0022) < decimal.Parse(field0023))
                     throw new Exception("报销金额不能大于申请金额");
 
                 if (decimal.Parse(field0017) < decimal.Parse(field0023))
@@ -699,9 +700,14 @@ namespace TR.OA.BusHelper
                                     </definitions><values>{hospitalRows}</values></subForm></subForms></formExport>";
 
                 #endregion
-
-                sql = $@"Insert Into DataService.dbo.OATask([FTemplateCode],[FSenderLoginName],[FEmployeeCode],[FEmployeeName],[FSubject],[FData],[FFormContentAtt]) Values('O202001','{"zhangsh"}','{""}','{EmployeeeName}','{"学术活动费用支付单-YRB-" + EmployeeeName + "-" + DateTime.Now.ToString()}' , '{formData}','{attjson}')";
+                string oaid = Guid.NewGuid().ToString();
+                //插入流程数据
+                sql = $@"Insert Into DataService.dbo.OATask([FOAID],[FTemplateCode],[FSenderLoginName],[FEmployeeCode],[FEmployeeName],[FSubject],[FData],[FFormContentAtt]) Values('{oaid}','O202001','{"zhangsh"}','{""}','{EmployeeeName}','{"学术活动费用支付单-YRB-" + EmployeeeName + "-" + DateTime.Now.ToString()}' , '{formData}','{attjson}')";
                 runner.ExecuteSqlNone(sql);
+                //发起流程
+
+                //更新fileID为subID
+
                 result = "<UpdateData><Result>True</Result><Description></Description></UpdateData>";
             }
             catch (Exception err)

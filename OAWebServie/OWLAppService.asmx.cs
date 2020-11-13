@@ -137,12 +137,12 @@ namespace TR.OAWebServie
         #region 提交学术费用单
 
         [WebMethod]
-        public string SubmitAcademicExpensesFormJson(string JsonMessage)
+        public string SubmitActivityExpensesFormJson(string JsonMessage)
         {
             FileLogger.WriteLog("Json：" + JsonMessage, 1, "OAWebService", "SubmitAcademicExpensesFormJson", "DataService");
             string xmlString = iTR.Lib.Common.Json2XML(JsonMessage, "UpdateData");
             FileLogger.WriteLog("XML：" + xmlString, 1, "OAWebService", "SubmitAcademicExpensesFormJson", "DataService");
-            string result = SubmitAcademicExpensesForm(xmlString);
+            string result = SubmitActivityExpensesForm(xmlString);
             result = iTR.Lib.Common.XML2Json(result, "UpdateData");
             return result;
         }
@@ -152,7 +152,7 @@ namespace TR.OAWebServie
         /// <param name="xmlMessage"></param>
         /// <returns></returns>
         [WebMethod]
-        public string SubmitAcademicExpensesForm(string xmlMessage)
+        public string SubmitActivityExpensesForm(string xmlMessage)
         {
             string result = "<UpdateData>" +
                           "<Result>False</Result>" +
@@ -165,7 +165,7 @@ namespace TR.OAWebServie
                 if (Common.CheckAuthCode("SubmitPaymentForm", xmlMessage))
                 {
                     OWLBusHelper obj = new OWLBusHelper();
-                    result = obj.SubmitAcademicExpensesForm(xmlMessage);
+                    result = obj.SubmitActivityExpensesForm(xmlMessage);
                 }
             }
             catch (Exception err)

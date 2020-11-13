@@ -340,7 +340,7 @@ namespace TR.OA.BusHelper
 
         #region 提交学术活动费用支付单3.0
 
-        public string SubmitAcademicExpensesForm(string xmlString)
+        public string SubmitActivityExpensesForm(string xmlString)
         {
             string sql = "", EmployeeeID = "", rowDatas = "", loginName = "", EmployeeeName = "";
             string result = @"<UpdateData><Result>False</Result><Description></Description></UpdateData>";
@@ -516,7 +516,7 @@ namespace TR.OA.BusHelper
                     //赋值申请日期
                     field0003 = DateTime.Now.ToString("yyyy-MM-dd");
 
-                    #region 获取分摊医院
+                    #region 分摊医院
 
                     string hosRow = @"<row><column name=""编码_分摊_0""><value>{0}</value></column>
                                     <column name=""名称_分摊""><value>{1}</value></column>

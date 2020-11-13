@@ -643,7 +643,6 @@ namespace TR.OA.BusHelper
                                     <column name=""公司""><value>上海腾瑞制药有限公司</value></column>
                                     <column name=""申请人""><value>{EmployeeeID}</value></column>
                                     <column name=""申请日期""><value>{field0067}</value></column>
-                                    <column name=""总金额""><value>{field0023}</value></column>
                                     <column name=""单号""><value>{field0006}</value></column>
                                     <column name=""成本中心""><value>{field0007}</value></column>
                                     <column name=""申请单""><value>{field0006}</value></column>
@@ -661,22 +660,16 @@ namespace TR.OA.BusHelper
                                     <column name=""申请金额""><value>{field0022}</value></column>
                                     <column name=""报销金额""><value>{field0023}</value></column>
                                     <column name=""申请单单号""><value>{field0024}</value></column>
-                                    <column name=""医院""><value>{field0025}</value></column>
-                                    <column name=""科室""><value>{19}</value></column>
                                     <column name=""学术材料""><value></value></column>
                                     <column name=""会议议程""><value></value></column>
                                     <column name=""会议纪要""><value></value></column>
                                     <column name=""课酬附件""><value></value></column>
                                     <column name=""会议照片""><value></value></column>
                                     <column name=""参会名单""><value></value></column>
-                                    <column name=""新医院""><value></value></column>
-                                    <column name=""新科室""><value></value></column>
-                                    <column name=""新事由""><value></value></column>
                                     <column name=""规模""><value>{field0020}</value></column>
                                     <column name=""是否按计划""><value>{field0044}</value></column>
                                     <column name=""费用类型""><value>学术活动费</value></column>
                                     <column name=""个人报销金额""><value>{field0047}</value></column>
-                                    <column name=""财务审批标志""><value>-1</value></column>
                                     <column name=""费用来源""><value>{field0063}</value></column>
                                     <column name=""可用额""><value>{field0053}</value></column>
                                     <column name=""在途额""><value>{field0054}</value></column>
@@ -729,6 +722,7 @@ namespace TR.OA.BusHelper
                 string base64String = "", fileName = "", EmployeeID = "", fileSize = "", mimeType = "";
 
                 string path = System.Configuration.ConfigurationManager.AppSettings["Path"];
+                path = DateTime.Now.Year + "\\" + DateTime.Now.Month + "\\" + DateTime.Now.Day;
                 XmlDocument doc = new XmlDocument();
                 doc.LoadXml(xmlString);
                 XmlNode vNode = doc.SelectSingleNode(callType + "/Base64String");

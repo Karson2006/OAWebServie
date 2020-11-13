@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Xml;
 using iTR.Lib;
+using Newtonsoft.Json;
 
 namespace TR.OA.BusHelper
 {
@@ -337,8 +338,6 @@ namespace TR.OA.BusHelper
 
         #endregion
 
-
-
         #region 提交学术活动费用支付单3.0
 
         public string SubmitAcademicExpensesForm(string xmlString)
@@ -367,17 +366,16 @@ namespace TR.OA.BusHelper
                 string field0024 = "";  //申请单单号
                 string field0025 = "";  //医院
                 string field0044 = "";  //是否按计划 
+                string field0047 = "";//个人报销金额==支付金额
                 string field0053 = "";  //可用额
                 string field0054 = "";  //在途额
-                string field0055 = "";  //在途额
+                string field0055 = "";  //财务审批标志
                 string field0063 = "";  //费用来源
                 string field0067 = "";  //成本中心_归档
-                string bankRows = "", hosRows = "", attRows = "";
+                string bankRows = "", hospitalRows = "", attRows = "";
                 #endregion
 
-                try
-                {
-
+ 
                     XmlDocument doc = new XmlDocument();
                     doc.LoadXml(xmlString);
 
@@ -462,7 +460,7 @@ namespace TR.OA.BusHelper
                         field0010 = dt.Rows[0]["FEmployeeCode"].ToString();
                         field0011 = dt.Rows[0]["FDeptID"].ToString();
                         field0007 = dt.Rows[0]["FCostCenter"].ToString();
-                        //  field0050 = dt.Rows[0]["FCostCenter"].ToString();
+                        field0067 = dt.Rows[0]["FCostCenter"].ToString();
                         field0012 = dt.Rows[0]["FBank"].ToString();
                         field0013 = dt.Rows[0]["FAccount"].ToString();
                         loginName = dt.Rows[0]["LOGIN_NAME"].ToString();
@@ -488,17 +486,18 @@ namespace TR.OA.BusHelper
                         //可用额
                         field0053 = dt.Rows[0]["field0053"].ToString();
                         //月度申请总额
-                        field0017 = dt.Rows[0]["field0017"].ToString();
+                         field0017 = dt.Rows[0]["field0017"].ToString();
                         //学术费用明细账已用额
-                        // field0056 = dt.Rows[0]["field0056"].ToString();
+                        // field0067 = dt.Rows[0]["field0056"].ToString();
                         //申请单单号
                         field0024 = dt.Rows[0]["field0024"].ToString();
                         //在途额
                         field0054 = dt.Rows[0]["field0054"].ToString();
                     }
+ 
 
-                    //报销金额
-                    node = doc.SelectSingleNode("UpdateData/field0023");
+                //报销金额
+                node = doc.SelectSingleNode("UpdateData/field0023");
                     if (node != null)
                         field0024 = node.InnerText.Trim();
                     else
@@ -556,9 +555,9 @@ namespace TR.OA.BusHelper
 
                     #endregion
 
-                    #region 是否有第三方判断
+                    #region  开户行
                     verifyList.Clear();
-
+                    Dictionary<string, string> bankDic = new Dictionary<string, string>();
 
                     string bankRow = @"<row><column name=""收款方""><value>{0}</value></column>
                                     <column name=""开户行及账号""><value>{1}</value></column>
@@ -573,78 +572,118 @@ namespace TR.OA.BusHelper
                     {
                         bankRows = bankRows + string.Format(bankRow, row["field0048"].InnerText, row["field0049"].InnerText, row["field0050"].InnerText, row["field0051"].InnerText);
                         if (!verifyList.ContainsKey(field0062))
-                            //field0057 名称_分摊	 
-                            verifyList.Add(field0062, row["field0049"].InnerText);
+                        //field0057 名称_分摊	 
+                        bankDic.Add(field0062, row["field0049"].InnerText);
                     }
-                    if (nodes.Count > verifyList.Count)
+                    if (nodes.Count > bankDic.Count)
                         throw new Exception("开户行及账号不能重复");
                     #endregion
 
                     #region 获取附件
-                    verifyList.Clear();
-
+ 
+ 
+                  Dictionary<string, string> attDic = new Dictionary<string, string>();
 
                     nodes = doc.SelectNodes("UpdateData/ADataRows/data");
+                    
                     //附件节点不能为空
                     if (nodes.Count == 0)
                         throw new Exception("附件不能为空");
+                    string attid = "",attjson="";
+                    foreach (XmlNode row in nodes)
+                    {
+                        attid = "";
+                        switch (row["Type"].ToString().Trim())
+                        {
+                            case "学术材料": attid = "field0032" ; break;
+                            case "会议议程": attid = "field0033" ; break;
+                            case "会议纪要": attid = "field0034" ; break;
+                            case "课酬附件": attid = "field0035" ; break;
+                            case "会议照片": attid = "field0036" ; break;
+                            case "参会名单": attid = "field0037" ; break;
+                        }
+                        if (!attDic.ContainsValue(attid))
+                        {
+                        //FileID做唯一键,不会重复
+                        attDic.Add(row["FileID"].ToString().Trim(),attid);
+                        }
+                    }
+                    attjson = JsonConvert.SerializeObject(attDic);
+
+                    #region 附件验证
+
+                    if (!attDic.ContainsValue("field0032"))
+                    {
+                        throw new Exception("缺少学术材料附件");
+                    }
+                    if (!attDic.ContainsValue("field0033"))
+                    {
+                        throw new Exception("缺少会议议程附件");
+                    }
+                    if (!attDic.ContainsValue("field0034"))
+                    {
+                        throw new Exception("缺少会议纪要附件");
+                    }
+                    if (!attDic.ContainsValue("field0036"))
+                    {
+                        throw new Exception("缺少会议照片附件");
+                    }
+                    if (!attDic.ContainsValue("field0037"))
+                    {
+                        throw new Exception("缺少学参会名单附件");
+                    }
 
                     #endregion
 
-                }
-                catch (Exception ex)
-                {
+                    #endregion
 
-                    throw ex;
-                }
 
                 #region formdata
                 string formData = $@"<formExport version=""2.0""><summary id=""-4402170772378466531"" name=""formmain_5925""/><definitions/><values>
                                     <column name=""公司""><value>上海腾瑞制药有限公司</value></column>
-                                    <column name=""申请人""><value>{0}</value></column>
-                                    <column name=""申请日期""><value>{1}</value></column>
-                                    <column name=""总金额""><value>{2}</value></column>
-                                    <column name=""单号""><value>{3}</value></column>
-                                    <column name=""成本中心""><value>{4}</value></column>
-                                    <column name=""申请单""><value>{5}</value></column>
-                                    <column name=""工号""><value>{6}</value></column>
-                                    <column name=""所在部门""><value>{7}</value></column>
-                                    <column name=""收款开户行""><value>{8}</value></column>
-                                    <column name=""收款银行账号""><value>{9}</value></column>                                    
+                                    <column name=""申请人""><value>{EmployeeeID}</value></column>
+                                    <column name=""申请日期""><value>{field0067}</value></column>
+                                    <column name=""总金额""><value>{field0023}</value></column>
+                                    <column name=""单号""><value>{field0006}</value></column>
+                                    <column name=""成本中心""><value>{field0007}</value></column>
+                                    <column name=""申请单""><value>{field0006}</value></column>
+                                    <column name=""工号""><value>{field0010}</value></column>
+                                    <column name=""所在部门""><value>{field0011}</value></column>
+                                    <column name=""收款开户行""><value>{field0012}</value></column>
+                                    <column name=""收款银行账号""><value>{field0013}</value></column>                                    
                                     <column name=""表单类型""><value>学术活动费用支付单</value></column>
                                     <column name=""查看查验结果""><value>通过</value></column>
-                                    <column name=""月度申请总额""><value>{10}</value></column>
-                                    <column name=""举办日期""><value>{11}</value></column>
-                                    <column name=""计划日期""><value>{12}</value></column>
-                                    <column name=""实际规模""><value>{13}</value></column>
-                                    <column name=""事由""><value>{14}</value></column>
-                                    <column name=""申请金额""><value>{15}</value></column>
-                                    <column name=""报销金额""><value>{16}</value></column>
-                                    <column name=""申请单单号""><value>{17}</value></column>
-                                    <column name=""医院""><value>{18}</value></column>
+                                    <column name=""月度申请总额""><value>{field0017}</value></column>
+                                    <column name=""举办日期""><value>{field0018}</value></column>
+                                    <column name=""计划日期""><value>{field0019}</value></column>
+                                    <column name=""实际规模""><value>{field0020}</value></column>
+                                    <column name=""事由""><value>{field0021}</value></column>
+                                    <column name=""申请金额""><value>{field0022}</value></column>
+                                    <column name=""报销金额""><value>{field0023}</value></column>
+                                    <column name=""申请单单号""><value>{field0024}</value></column>
+                                    <column name=""医院""><value>{field0025}</value></column>
                                     <column name=""科室""><value>{19}</value></column>
-                                    <column name=""学术材料""><value>{20}</value></column>
-                                    <column name=""会议议程""><value>{21}</value></column>
-                                    <column name=""会议纪要""><value>{22}</value></column>
-                                    <column name=""课酬附件""><value>{23}</value></column>
-                                    <column name=""会议照片""><value>{24}</value></column>
-                                    <column name=""参会名单""><value>{25}</value></column>
+                                    <column name=""学术材料""><value></value></column>
+                                    <column name=""会议议程""><value></value></column>
+                                    <column name=""会议纪要""><value></value></column>
+                                    <column name=""课酬附件""><value></value></column>
+                                    <column name=""会议照片""><value></value></column>
+                                    <column name=""参会名单""><value></value></column>
                                     <column name=""新医院""><value></value></column>
                                     <column name=""新科室""><value></value></column>
                                     <column name=""新事由""><value></value></column>
-                                    <column name=""规模""><value>{29}</value></column>
-                                    <column name=""是否按计划""><value>{30}</value></column>
+                                    <column name=""规模""><value>{field0020}</value></column>
+                                    <column name=""是否按计划""><value>{field0044}</value></column>
                                     <column name=""费用类型""><value>学术活动费</value></column>
-                                    <column name=""个人报销金额""><value>{32}</value></column>
-                                    <column name=""收款方式""><value>{33}</value></column>
+                                    <column name=""个人报销金额""><value>{field0047}</value></column>
                                     <column name=""财务审批标志""><value>-1</value></column>
-                                    <column name=""费用来源""><value>{00}</value></column>
-                                    <column name=""可用额""><value>{34}</value></column>
-                                    <column name=""在途额""><value>{35}</value></column>
+                                    <column name=""费用来源""><value>{field0063}</value></column>
+                                    <column name=""可用额""><value>{field0053}</value></column>
+                                    <column name=""在途额""><value>{field0054}</value></column>
                                     <column name=""活动类型""><value>{39}</value></column>
                                     <column name=""是否有发票""><value>0</value></column>
                                     <column name=""YRB发起""><value>1</value></column>
-                                    <column name=""成本中心_归档""><value>{40}</value></column>
+                                    <column name=""成本中心_归档""><value>{field0067}</value></column>
                                     </values>
                                     <subForms>
                                     <subForm><definitions>
@@ -652,7 +691,7 @@ namespace TR.OA.BusHelper
                                     <column id=""field0049"" type=""0"" name=""开户行及账号"" length=""255""/>
                                     <column id=""field0050"" type=""4"" name=""收款金额"" length=""20""/>
                                     <column id=""field0051"" type=""0"" name=""付款事由"" length=""255""/>
-                                    </definitions><values>{41}</values>
+                                    </definitions><values>{bankRows}</values>
                                     </subForm><subForm><definitions>
                                     <column id=""field0056"" type=""0"" name=""编码_分摊_0"" length=""255""/>
                                     <column id=""field0057"" type=""0"" name=""名称_分摊"" length=""255""/>
@@ -661,13 +700,12 @@ namespace TR.OA.BusHelper
                                     <column id=""field0060"" type=""0"" name=""编码_分摊_1"" length=""255""/>
                                     <column id=""field0061"" type=""0"" name=""科室_分摊"" length=""255""/>
                                     <column id=""field0062"" type=""0"" name=""编码_分摊"" length=""255""/>
-                                    </definitions><values>{42}</values></subForm></subForms></formExport>";
+                                    </definitions><values>{hospitalRows}</values></subForm></subForms></formExport>";
 
                 #endregion
 
-                sql = $@"Insert Into DataService.dbo.OATask([FTemplateCode],[FSenderLoginName],[FEmployeeCode],[FEmployeeName],[FSubject],[FData]) Values('O202001','{"zhangsh"}','{""}','{EmployeeeName}','{"学术活动费用支付单-YRB-" + EmployeeeName + "-" + DateTime.Now.ToString()}' , '{formData}')";
+                sql = $@"Insert Into DataService.dbo.OATask([FTemplateCode],[FSenderLoginName],[FEmployeeCode],[FEmployeeName],[FSubject],[FData],[FFormContentAtt]) Values('O202001','{"zhangsh"}','{""}','{EmployeeeName}','{"学术活动费用支付单-YRB-" + EmployeeeName + "-" + DateTime.Now.ToString()}' , '{formData}','{attjson}')";
                 runner.ExecuteSqlNone(sql);
-
                 result = "<UpdateData><Result>True</Result><Description></Description></UpdateData>";
             }
             catch (Exception err)

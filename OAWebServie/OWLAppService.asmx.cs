@@ -139,9 +139,9 @@ namespace TR.OAWebServie
         [WebMethod]
         public string SubmitActivityExpensesFormJson(string JsonMessage)
         {
-            FileLogger.WriteLog("Json：" + JsonMessage, 1, "OAWebService", "SubmitAcademicExpensesFormJson", "DataService");
+            FileLogger.WriteLog("Json：" + JsonMessage, 1, "OAWebService", "SubmitActivityExpensesFormJson", "DataService");
             string xmlString = iTR.Lib.Common.Json2XML(JsonMessage, "UpdateData");
-            FileLogger.WriteLog("XML：" + xmlString, 1, "OAWebService", "SubmitAcademicExpensesFormJson", "DataService");
+            FileLogger.WriteLog("XML：" + xmlString, 1, "OAWebService", "SubmitActivityExpensesFormJson", "DataService");
             string result = SubmitActivityExpensesForm(xmlString);
             result = iTR.Lib.Common.XML2Json(result, "UpdateData");
             return result;

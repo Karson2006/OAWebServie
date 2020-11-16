@@ -4,6 +4,8 @@ using System.Data;
 using System.Xml;
 using iTR.Lib;
 using Newtonsoft.Json;
+using System.Threading.Tasks;
+using System.Linq;
 
 namespace TR.OA.BusHelper
 {
@@ -14,6 +16,7 @@ namespace TR.OA.BusHelper
         {
 
         }
+
         #region GetEntertainmentExpendList
         public string GetEntertainmentExpendList(string xmlString)
         {
@@ -94,7 +97,7 @@ namespace TR.OA.BusHelper
             string field0045 = "";  //费用来源
             string field0050 = "";  //成本中心_归档
             string field0056 = "";  //招待费明细账已用额
-
+            
             #endregion
 
             #region FormData
@@ -302,11 +305,8 @@ namespace TR.OA.BusHelper
                 {
                     if (row["field0043"].InnerText.Trim().Length > 0)
                         field0039 = row["field0043"].InnerText.Trim();
-                    else
-                        field0039 = row["field0044"].InnerText.Trim();
                     if (!hospitalList.ContainsKey(field0039))
                         hospitalList.Add(field0039, row["field0040"].InnerText);
-
                     rowDatas = rowDatas + string.Format(rowData, field0039, row["field0040"].InnerText, row["field0041"].InnerText,
                         row["field0042"].InnerText, row["field0043"].InnerText, row["field0044"].InnerText);
 
@@ -366,6 +366,12 @@ namespace TR.OA.BusHelper
                 string field0023 = "";  //报销金额
                 string field0024 = "";  //申请单单号
                 string field0025 = "";  //医院
+                string field0032 = "";  //学术材料":
+                string field0033 = "";  //会议议程":
+                string field0034 = "";  //会议纪要":
+                string field0035 = "";  //课酬附件":
+                string field0036 = "";  //会议照片":
+                string field0037 = "";  //参会名单":
                 string field0043 = "";  //规模
                 string field0044 = "";  //是否按计划 
                 string field0047 = "";  //个人报销金额
@@ -375,7 +381,9 @@ namespace TR.OA.BusHelper
                 string field0065 = "";  //活动类型
                 string field0067 = "";  //成本中心_归档
                 string field1000 = "";  //已用额
+                string field0062 = ""; //付款方式
                 string bankRows = "", hospitalRows = "";
+                
                 #endregion
 
 
@@ -531,15 +539,15 @@ namespace TR.OA.BusHelper
                                     <column name=""名称_分摊""><value>{1}</value></column>
                                     <column name=""分摊金额""><value>{2}</value></column>
                                     <column name=""分摊说明""><value>{3}</value></column>
-                                    <column name=""编码_分摊_1""><value></value></column>
+                                    <column name=""编码_分摊_1""><value>{0}</value></column>
                                     <column name=""科室_分摊""><value>{4}</value></column>
                                     <column name=""编码_分摊""><value>{5}</value></column>
                                     </row>";
                 XmlNodeList nodes = doc.SelectNodes("UpdateData/HDataRows/hospit");
                 //分摊医院不能为空
                 if (nodes.Count == 0)
-                    throw new Exception("分摊医院不能为空");
-                string field0062 = "";
+                    throw new Exception("分摊医院节点不能为空");
+                string tempcode = "";
                 Dictionary<string, string> verifyList = new Dictionary<string, string>();
                 foreach (XmlNode row in nodes)
                 {
@@ -555,15 +563,13 @@ namespace TR.OA.BusHelper
                     //row["field0058"].InnerText, row["field0059"].InnerText,  row["field0061"].InnerText, field0062);
 
                     if (row["field0024"].InnerText.Trim().Length > 0)
-                        field0062 = row["field0024"].InnerText.Trim();
-                    else
-                        throw new Exception("分摊医院不能为空");
-                    if (!verifyList.ContainsKey(field0062))
+                        tempcode = row["field0024"].InnerText.Trim();
+                    if (!verifyList.ContainsKey(tempcode))
                         //field0057 名称_分摊	 
-                        verifyList.Add(field0062, row["field0012"].InnerText);
+                        verifyList.Add(tempcode, row["field0012"].InnerText);
                     //编码分摊放到最后一个
-                    hosRow = hosRow + string.Format(hosRow, row["field0024"].InnerText, row["field0012"].InnerText,
-                    row["field0058"].InnerText, row["field0042"].InnerText, row["field0061"].InnerText, field0062);
+                    hospitalRows = hospitalRows + string.Format(hosRow, row["field0024"].InnerText, row["field0012"].InnerText,
+                    row["field0058"].InnerText, row["field0042"].InnerText, row["field0061"].InnerText, tempcode);
                 }
 
                 if (verifyList.ContainsKey("OA_19888"))
@@ -599,12 +605,8 @@ namespace TR.OA.BusHelper
                     foreach (XmlNode row in nodes)
                     {
                         bankRows = bankRows + string.Format(bankRow, row["field0048"].InnerText, row["field0049"].InnerText, row["field0050"].InnerText, row["field0051"].InnerText);
-                        if (!verifyList.ContainsKey(field0062))
-                            //field0057 名称_分摊	 
-                            bankDic.Add(field0062, row["field0049"].InnerText);
                     }
-                    if (nodes.Count > bankDic.Count)
-                        throw new Exception("开户行及账号不能重复");
+
                 }
 
                 #endregion
@@ -612,6 +614,7 @@ namespace TR.OA.BusHelper
                 #region 获取附件
 
                 Dictionary<string, string> attDic = new Dictionary<string, string>();
+
 
                 nodes = doc.SelectNodes("UpdateData/ADataRows/data");
 
@@ -622,7 +625,7 @@ namespace TR.OA.BusHelper
                 foreach (XmlNode row in nodes)
                 {
                     attid = "";
-                    switch (row["Type"].ToString().Trim())
+                    switch (row["Type"].InnerText.ToString().Trim())
                     {
                         case "学术材料": attid = "field0032"; break;
                         case "会议议程": attid = "field0033"; break;
@@ -634,34 +637,48 @@ namespace TR.OA.BusHelper
                     if (!attDic.ContainsValue(attid))
                     {
                         //FileID做唯一键,不会重复
-                        attDic.Add(row["FileID"].ToString().Trim(), attid);
+                        attDic.Add(row["FileID"].InnerText.ToString().Trim(), attid);
                     }
                 }
                 attjson = JsonConvert.SerializeObject(attDic);
 
                 #region 附件验证
+                //获取付款方式
+                node = doc.SelectSingleNode("UpdateData/field0062");
+                if (node != null)
+                    field0062 = node.InnerText.Trim();
 
                 if (!attDic.ContainsValue("field0032"))
                 {
                     throw new Exception("缺少学术材料附件");
                 }
-                if (!attDic.ContainsValue("field0033"))
+
+                if (field0062 != "预付款")
                 {
-                    throw new Exception("缺少会议议程附件");
-                }
-                if (!attDic.ContainsValue("field0034"))
-                {
-                    throw new Exception("缺少会议纪要附件");
-                }
-                if (!attDic.ContainsValue("field0036"))
-                {
-                    throw new Exception("缺少会议照片附件");
-                }
-                if (!attDic.ContainsValue("field0037"))
-                {
-                    throw new Exception("缺少学参会名单附件");
+                    if (!attDic.ContainsValue("field0033"))
+                    {
+                        throw new Exception("缺少会议议程附件");
+                    }
+                    if (!attDic.ContainsValue("field0034"))
+                    {
+                        throw new Exception("缺少会议纪要附件");
+                    }
+                    if (!attDic.ContainsValue("field0036"))
+                    {
+                        throw new Exception("缺少会议照片附件");
+                    }
+                    if (!attDic.ContainsValue("field0037"))
+                    {
+                        throw new Exception("缺少学参会名单附件");
+                    }
                 }
 
+                field0032 = attDic.FirstOrDefault(x => x.Value == "field0032").Key??"";
+                field0062 = attDic.FirstOrDefault(x => x.Value == "field0062").Key??"";
+                field0034 = attDic.FirstOrDefault(x => x.Value == "field0034").Key??"";
+                field0035 = attDic.FirstOrDefault(x => x.Value == "field0035").Key??"";
+                field0036 = attDic.FirstOrDefault(x => x.Value == "field0036").Key??"";
+                field0037 = attDic.FirstOrDefault(x => x.Value == "field0037").Key??"";
                 #endregion
 
                 #endregion
@@ -689,12 +706,12 @@ namespace TR.OA.BusHelper
                                     <column name=""申请金额""><value>{field0022}</value></column>
                                     <column name=""报销金额""><value>{field0023}</value></column>
                                     <column name=""申请单单号""><value>{field0024}</value></column>
-                                    <column name=""学术材料""><value></value></column>
-                                    <column name=""会议议程""><value></value></column>
-                                    <column name=""会议纪要""><value></value></column>
-                                    <column name=""课酬附件""><value></value></column>
-                                    <column name=""会议照片""><value></value></column>
-                                    <column name=""参会名单""><value></value></column>
+                                    <column name=""学术材料""><value>{field0032}</value></column>
+                                    <column name=""会议议程""><value>{field0033}</value></column>
+                                    <column name=""会议纪要""><value>{field0034}</value></column>
+                                    <column name=""课酬附件""><value>{field0035}</value></column>
+                                    <column name=""会议照片""><value>{field0036}</value></column>
+                                    <column name=""参会名单""><value>{field0037}</value></column>
                                     <column name=""规模""><value>{field0043}</value></column>
                                     <column name=""是否按计划""><value>{field0044}</value></column>
                                     <column name=""费用类型""><value>学术活动费</value></column>
@@ -727,12 +744,14 @@ namespace TR.OA.BusHelper
                 #endregion
                 string oaid = Guid.NewGuid().ToString();
                 //插入流程数据
-                sql = $@"Insert Into DataService.dbo.OATask([FOAID],[FTemplateCode],[FSenderLoginName],[FEmployeeCode],[FEmployeeName],[FSubject],[FData],[FFormContentAtt]) Values('{oaid}','O202001','{loginName}','{field0010}','{EmployeeeName}','{"学术活动费用支付单-YRB-" + EmployeeeName + "-" + DateTime.Now.ToString()}' , '{formData}','{attjson}')";
+                sql = $@"Insert Into DataService.dbo.OATask([FOAID],[FTemplateCode],[FSenderLoginName],[FEmployeeCode],[FEmployeeName],[FSubject],[FData],[FFormContentAtt]) Values('{oaid}','O202004','{loginName}','{field0010}','{EmployeeeName}','{"学术活动费用支付单-YRB-" + EmployeeeName + "-" + DateTime.Now.ToString()}' , '{formData}','{attjson}')";
                 runner.ExecuteSqlNone(sql);
-                //发起流程
-
+                //FlowServerInvoke flowServerInvoke = new FlowServerInvoke();
+                ////发起流程
+                //Task<bool> flowid = flowServerInvoke.RunBGWork(oaid, 1);
+                ////等待发起流程完成
+                //Task.WaitAll(flowid);
                 //更新fileID为subID
-
                 result = "<UpdateData><Result>True</Result><Description></Description></UpdateData>";
             }
             catch (Exception err)

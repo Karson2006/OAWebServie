@@ -12,12 +12,13 @@ namespace TR.OA.BusHelper
     public class OWLBusHelper
     {
         private SQLServerHelper runner = null;
+
         public OWLBusHelper()
         {
-
         }
 
         #region GetEntertainmentExpendList
+
         public string GetEntertainmentExpendList(string xmlString)
         {
             string sql = "", result = "", EmployeeeID = "";
@@ -39,10 +40,10 @@ namespace TR.OA.BusHelper
             return result;
         }
 
-
-        #endregion
+        #endregion GetEntertainmentExpendList
 
         #region GeActivityExpendList
+
         public string GeActivityExpendList(string xmlString)
         {
             string sql = "", result = "", EmployeeeID = "";
@@ -63,20 +64,21 @@ namespace TR.OA.BusHelper
             return result;
         }
 
-
-        #endregion
+        #endregion GeActivityExpendList
 
         #region SubmitEntertainmentExpendForm
+
         public string SubmitEntertainmentExpendForm(string xmlString)
         {
             string sql = "", EmployeeeID = "", rowDatas = "", loginName = "", EmployeeeName = "";
             string result = @"<UpdateData><Result>False</Result><Description></Description></UpdateData>";
 
             #region 参数定义 参考
+
             string formID = ""; //申请日期
-            string field0003 = ""; //申请日期	
+            string field0003 = ""; //申请日期
             string field0006 = "";  //单号
-            string field0007 = "";  //成本中心	
+            string field0007 = "";  //成本中心
             string field0010 = "";  //工号
             string field0011 = "";  //所在部门
             string field0012 = "";  //收款开户行
@@ -97,10 +99,11 @@ namespace TR.OA.BusHelper
             string field0045 = "";  //费用来源
             string field0050 = "";  //成本中心_归档
             string field0056 = "";  //招待费明细账已用额
-            
-            #endregion
+
+            #endregion 参数定义 参考
 
             #region FormData
+
             string formData = @"<formExport version=""2.0""><summary id=""7810778149231805299"" name=""formmain_5935""/>
                                             <definitions/>
                                             <values>
@@ -159,11 +162,11 @@ namespace TR.OA.BusHelper
                                                 <column name=""编码_分摊_0""><value>{4}</value>
                                                 </column><column name=""编码_分摊_1""><value>{5}</value></column>
                                             </row>";
-            #endregion
+
+            #endregion FormData
 
             try
             {
-
                 XmlDocument doc = new XmlDocument();
                 doc.LoadXml(xmlString);
                 XmlNode node = doc.SelectSingleNode("UpdateData/field0002");
@@ -177,7 +180,7 @@ namespace TR.OA.BusHelper
                             From  v3x.dbo.ORG_MEMBER t1
                             Left Join v3x.dbo.formmain_5499 t2 On t1.ORG_DEPARTMENT_ID= t2.field0002
                             Left Join v3x.dbo.formmain_8130 t3 On t3.field0002= t1.Code
-                            Left Join v3x.dbo.ORG_PRINCIPAL t4 On t1.ID= t4.MEMBER_ID 
+                            Left Join v3x.dbo.ORG_PRINCIPAL t4 On t1.ID= t4.MEMBER_ID
                             Where  t1.ID='{0}' ";
                 sql = string.Format(sql, EmployeeeID);
                 runner = new SQLServerHelper();
@@ -217,7 +220,7 @@ namespace TR.OA.BusHelper
                     field0025 = dt.Rows[0]["field0025"].ToString();
                     field0037 = dt.Rows[0]["field0037"].ToString();
                 }
-                //不能分次核销,在途额 +  可用额 
+                //不能分次核销,在途额 +  可用额
                 if (decimal.Parse(field0037) + decimal.Parse(field0056) > 0)
                     throw new Exception("招待费不能分次核销");
 
@@ -309,7 +312,6 @@ namespace TR.OA.BusHelper
                         hospitalList.Add(field0039, row["field0040"].InnerText);
                     rowDatas = rowDatas + string.Format(rowData, field0039, row["field0040"].InnerText, row["field0041"].InnerText,
                         row["field0042"].InnerText, row["field0043"].InnerText, row["field0044"].InnerText);
-
                 }
                 if (hospitalList.ContainsKey("OA_19888"))
                     throw new Exception("费用不能分摊到【跨区跨院活动】，请选择具体医院");
@@ -336,8 +338,7 @@ namespace TR.OA.BusHelper
             return result;
         }
 
-
-        #endregion
+        #endregion SubmitEntertainmentExpendForm
 
         #region 提交学术活动费用支付单3.0
 
@@ -347,12 +348,12 @@ namespace TR.OA.BusHelper
             string result = @"<UpdateData><Result>False</Result><Description></Description></UpdateData>";
             try
             {
-
                 #region 参数定义
-                string formID = ""; // 
-                string field0003 = ""; //申请日期	
+
+                string formID = ""; //
+                string field0003 = ""; //申请日期
                 string field0006 = "";  //单号
-                string field0007 = "";  //成本中心	
+                string field0007 = "";  //成本中心
                 string field0010 = "";  //工号
                 string field0011 = "";  //所在部门
                 string field0012 = "";  //收款开户行
@@ -373,7 +374,7 @@ namespace TR.OA.BusHelper
                 string field0036 = "";  //会议照片":
                 string field0037 = "";  //参会名单":
                 string field0043 = "";  //规模
-                string field0044 = "";  //是否按计划 
+                string field0044 = "";  //是否按计划
                 string field0047 = "";  //个人报销金额
                 string field0053 = "";  //可用额
                 string field0054 = "";  //在途额
@@ -383,15 +384,15 @@ namespace TR.OA.BusHelper
                 string field1000 = "";  //已用额
                 string field0062 = ""; //付款方式
                 string bankRows = "", hospitalRows = "";
-                
-                #endregion
 
+                #endregion 参数定义
 
                 XmlDocument doc = new XmlDocument();
                 doc.LoadXml(xmlString);
 
                 #region xml取值
-                //看到下面的代码不要怀疑自己的眼睛 
+
+                //看到下面的代码不要怀疑自己的眼睛
                 XmlNode node = doc.SelectSingleNode("UpdateData/field0002");
                 if (node != null && node.InnerText.Trim().Length > 0)
                     EmployeeeID = node.InnerText;
@@ -403,7 +404,7 @@ namespace TR.OA.BusHelper
                 else
                     throw new Exception("单号不能为空");
                 //是否按计划
-                //node = doc.SelectSingleNode("UpdateData/field0044");  
+                //node = doc.SelectSingleNode("UpdateData/field0044");
                 node = doc.SelectSingleNode("UpdateData/field0031");
                 if (node != null)
                     field0044 = node.InnerText.Trim().Length > 0 ? node.InnerText : "1";
@@ -444,6 +445,14 @@ namespace TR.OA.BusHelper
                 else
                     throw new Exception("formID不能为空");
 
+                //禁止插入相同formID
+                sql = $@"select * from formmain_6185 where ID = {formID}";
+                runner = new SQLServerHelper();
+                DataTable dtForm = runner.ExecuteSql(sql);
+                if (dtForm.Rows.Count > 1)
+                {
+                    throw new Exception("formID已存在");
+                }
                 //申请金额
                 //node = doc.SelectSingleNode("UpdateData/field0022");
                 node = doc.SelectSingleNode("UpdateData/field0009");
@@ -457,15 +466,16 @@ namespace TR.OA.BusHelper
                 if (node != null)
                     field0025 = node.InnerText.Trim();
 
-                #endregion
+                #endregion xml取值
 
-                #region 获取个人资料                    
+                #region 获取个人资料
+
                 sql = @"Select t1.ID As FEmployeeID, t1.Code As FEmployeeCode,t1.ORG_DEPARTMENT_ID AS FDeptID, Isnull(t2.field0008,'') As FCostCenter,
                             Isnull(t3.field0003,'') As FBank,Isnull(t3.field0005,'') As FAccount,Isnull(t3.field0004,'') As FCommpany,t4.LOGIN_NAME,t1.Name AS FEmployeeName
                             From  v3x.dbo.ORG_MEMBER t1
                             Left Join v3x.dbo.formmain_5499 t2 On t1.ORG_DEPARTMENT_ID= t2.field0002
                             Left Join v3x.dbo.formmain_8130 t3 On t3.field0002= t1.Code
-                            Left Join v3x.dbo.ORG_PRINCIPAL t4 On t1.ID= t4.MEMBER_ID 
+                            Left Join v3x.dbo.ORG_PRINCIPAL t4 On t1.ID= t4.MEMBER_ID
                             Where  t1.ID='{0}' ";
                 sql = string.Format(sql, EmployeeeID);
                 runner = new SQLServerHelper();
@@ -482,16 +492,16 @@ namespace TR.OA.BusHelper
                     loginName = dt.Rows[0]["LOGIN_NAME"].ToString();
                     EmployeeeName = dt.Rows[0]["FEmployeeName"].ToString();
                 }
-                #endregion
+
+                #endregion 获取个人资料
 
                 #region 金额判断
-
 
                 //读取学术费明细表可用额
                 sql = @"Select t1.field0006 As field0063,t2.SHOWVALUE AS field0045_Name,Isnull(t1.field0009,0) As field0053,Isnull(t3.field0011,0) As field0017,
                             Isnull(t1.field0007,0) As field1000,t1.field0018 AS field0024,Isnull(t1.field0008,0) AS field0054
                             from v3x.dbo.formmain_6187 t1
-                            Left Join v3x.dbo.CTP_ENUM_ITEM  t2 On t1.field0006= t2.ID  
+                            Left Join v3x.dbo.CTP_ENUM_ITEM  t2 On t1.field0006= t2.ID
                             Left Join v3x.dbo.formmain_6180  t3 On t1.field0018= t3.field0001
                             Where t1.field0001='" + field0006 + "'";
                 dt = runner.ExecuteSql(sql);
@@ -511,7 +521,6 @@ namespace TR.OA.BusHelper
                     field0054 = dt.Rows[0]["field0054"].ToString();
                 }
 
-
                 //报销金额
                 //node = doc.SelectSingleNode("UpdateData/field0023");
                 node = doc.SelectSingleNode("UpdateData/field0035");
@@ -523,12 +532,13 @@ namespace TR.OA.BusHelper
                 if (field0023.Trim().Length == 0)
                     throw new Exception("报销金额不能为空");
 
-                 if (decimal.Parse(field0022) < decimal.Parse(field0023))
+                if (decimal.Parse(field0022) < decimal.Parse(field0023))
                     throw new Exception("报销金额不能大于申请金额");
 
                 if (decimal.Parse(field0017) < decimal.Parse(field0023))
                     throw new Exception("报销金额不能大于月度可用额");
-                #endregion
+
+                #endregion 金额判断
 
                 //赋值申请日期
                 field0003 = DateTime.Now.ToString("yyyy-MM-dd");
@@ -556,7 +566,7 @@ namespace TR.OA.BusHelper
                     //else
                     //    field0062 = row["field0062"].InnerText.Trim();
                     //if (!verifyList.ContainsKey(field0062))
-                    //    //field0057 名称_分摊	 
+                    //    //field0057 名称_分摊
                     //    verifyList.Add(field0062, row["field0057"].InnerText);
                     ////编码分摊放到最后一个
                     //hosRow = hosRow + string.Format(hosRow, row["field0056"].InnerText, row["field0057"].InnerText,
@@ -565,7 +575,7 @@ namespace TR.OA.BusHelper
                     if (row["field0024"].InnerText.Trim().Length > 0)
                         tempcode = row["field0024"].InnerText.Trim();
                     if (!verifyList.ContainsKey(tempcode))
-                        //field0057 名称_分摊	 
+                        //field0057 名称_分摊
                         verifyList.Add(tempcode, row["field0012"].InnerText);
                     //编码分摊放到最后一个
                     hospitalRows = hospitalRows + string.Format(hosRow, row["field0024"].InnerText, row["field0012"].InnerText,
@@ -578,9 +588,9 @@ namespace TR.OA.BusHelper
                 if (nodes.Count > verifyList.Count)
                     throw new Exception("分摊医院不能重复");
 
-                #endregion
+                #endregion 分摊医院
 
-                #region  开户行
+                #region 开户行
 
                 //个人报销金额
                 //node = doc.SelectSingleNode("UpdateData/field0047");
@@ -589,7 +599,7 @@ namespace TR.OA.BusHelper
                     field0047 = node.InnerText.Trim();
 
                 //个人报销金额小于报销金额有第三方
-                if (int.Parse(field0047)<int.Parse(field0023))
+                if (int.Parse(field0047) < int.Parse(field0023))
                 {
                     Dictionary<string, string> bankDic = new Dictionary<string, string>();
 
@@ -606,22 +616,20 @@ namespace TR.OA.BusHelper
                     {
                         bankRows = bankRows + string.Format(bankRow, row["field0048"].InnerText, row["field0049"].InnerText, row["field0050"].InnerText, row["field0051"].InnerText);
                     }
-
                 }
 
-                #endregion
+                #endregion 开户行
 
                 #region 获取附件
 
                 Dictionary<string, string> attDic = new Dictionary<string, string>();
-
 
                 nodes = doc.SelectNodes("UpdateData/ADataRows/data");
 
                 //附件节点不能为空
                 if (nodes.Count == 0)
                     throw new Exception("附件不能为空");
-                string attid = "", attjson = "";
+                string attid = "";
                 foreach (XmlNode row in nodes)
                 {
                     attid = "";
@@ -640,9 +648,9 @@ namespace TR.OA.BusHelper
                         attDic.Add(row["FileID"].InnerText.ToString().Trim(), attid);
                     }
                 }
-                attjson = JsonConvert.SerializeObject(attDic);
 
                 #region 附件验证
+
                 //获取付款方式
                 node = doc.SelectSingleNode("UpdateData/field0062");
                 if (node != null)
@@ -673,18 +681,19 @@ namespace TR.OA.BusHelper
                     }
                 }
 
-                field0032 = attDic.FirstOrDefault(x => x.Value == "field0032").Key??"";
-                field0062 = attDic.FirstOrDefault(x => x.Value == "field0062").Key??"";
-                field0034 = attDic.FirstOrDefault(x => x.Value == "field0034").Key??"";
-                field0035 = attDic.FirstOrDefault(x => x.Value == "field0035").Key??"";
-                field0036 = attDic.FirstOrDefault(x => x.Value == "field0036").Key??"";
-                field0037 = attDic.FirstOrDefault(x => x.Value == "field0037").Key??"";
-                #endregion
+                field0032 = attDic.FirstOrDefault(x => x.Value == "field0032").Key ?? "";
+                field0062 = attDic.FirstOrDefault(x => x.Value == "field0062").Key ?? "";
+                field0034 = attDic.FirstOrDefault(x => x.Value == "field0034").Key ?? "";
+                field0035 = attDic.FirstOrDefault(x => x.Value == "field0035").Key ?? "";
+                field0036 = attDic.FirstOrDefault(x => x.Value == "field0036").Key ?? "";
+                field0037 = attDic.FirstOrDefault(x => x.Value == "field0037").Key ?? "";
 
-                #endregion
+                #endregion 附件验证
 
+                #endregion 获取附件
 
                 #region formdata
+
                 string formData = $@"<formExport version=""2.0""><summary id=""-4402170772378466531"" name=""formmain_5925""/><definitions/><values>
                                     <column name=""公司""><value>上海腾瑞制药有限公司</value></column>
                                     <column name=""申请人""><value>{EmployeeeID}</value></column>
@@ -695,7 +704,7 @@ namespace TR.OA.BusHelper
                                     <column name=""工号""><value>{field0010}</value></column>
                                     <column name=""所在部门""><value>{field0011}</value></column>
                                     <column name=""收款开户行""><value>{field0012}</value></column>
-                                    <column name=""收款银行账号""><value>{field0013}</value></column>                                    
+                                    <column name=""收款银行账号""><value>{field0013}</value></column>
                                     <column name=""表单类型""><value>学术活动费用支付单</value></column>
                                     <column name=""查看查验结果""><value>通过</value></column>
                                     <column name=""月度申请总额""><value>{field0017}</value></column>
@@ -721,8 +730,9 @@ namespace TR.OA.BusHelper
                                     <column name=""在途额""><value>{field0054}</value></column>
                                     <column name=""活动类型""><value>{field0065}</value></column>
                                     <column name=""是否有发票""><value>0</value></column>
-                                    <column name=""YRB发起""><value>1</value></column>
                                     <column name=""成本中心_归档""><value>{field0067}</value></column>
+                                    <column name=""YRB发起""><value>1</value></column>
+                                    <column name=""InvoiceMain_ID""><value>{formID}</value></column>
                                     </values>
                                     <subForms>
                                     <subForm><definitions>
@@ -741,17 +751,13 @@ namespace TR.OA.BusHelper
                                     <column id=""field0062"" type=""0"" name=""编码_分摊"" length=""255""/>
                                     </definitions><values>{hospitalRows}</values></subForm></subForms></formExport>";
 
-                #endregion
+                #endregion formdata
+
                 string oaid = Guid.NewGuid().ToString();
+                string attids = string.Join("|", attDic.Keys.ToArray());
                 //插入流程数据
-                sql = $@"Insert Into DataService.dbo.OATask([FOAID],[FTemplateCode],[FSenderLoginName],[FEmployeeCode],[FEmployeeName],[FSubject],[FData],[FFormContentAtt]) Values('{oaid}','O202004','{loginName}','{field0010}','{EmployeeeName}','{"学术活动费用支付单-YRB-" + EmployeeeName + "-" + DateTime.Now.ToString()}' , '{formData}','{attjson}')";
+                sql = $@"Insert Into DataService.dbo.OATask([FOAID],[FTemplateCode],[FSenderLoginName],[FEmployeeCode],[FEmployeeName],[FSubject],[FData],[FAttachments]) Values('{formID}','O202004','{loginName}','{field0010}','{EmployeeeName}','{"学术活动费用支付单-YRB-" + EmployeeeName + "-" + DateTime.Now.ToString()}' , '{formData}','{attids}')";
                 runner.ExecuteSqlNone(sql);
-                //FlowServerInvoke flowServerInvoke = new FlowServerInvoke();
-                ////发起流程
-                //Task<bool> flowid = flowServerInvoke.RunBGWork(oaid, 1);
-                ////等待发起流程完成
-                //Task.WaitAll(flowid);
-                //更新fileID为subID
                 result = "<UpdateData><Result>True</Result><Description></Description></UpdateData>";
             }
             catch (Exception err)
@@ -760,9 +766,11 @@ namespace TR.OA.BusHelper
             }
             return result;
         }
-        #endregion
+
+        #endregion 提交学术活动费用支付单3.0
 
         #region UploadFile
+
         public string UploadFile(string xmlString)
         {
             string callType = "UploadFile";
@@ -832,7 +840,6 @@ namespace TR.OA.BusHelper
             return result;
         }
 
-        #endregion
-
+        #endregion UploadFile
     }
 }

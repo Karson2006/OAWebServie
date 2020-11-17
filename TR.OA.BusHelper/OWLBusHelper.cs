@@ -553,33 +553,50 @@ namespace TR.OA.BusHelper
                                     <column name=""编码_分摊""><value>{5}</value></column>
                                     </row>";
                 XmlNodeList nodes = doc.SelectNodes("UpdateData/HDataRows/hospit");
+
                 //分摊医院不能为空
                 if (nodes.Count == 0)
                     throw new Exception("分摊医院节点不能为空");
-                string tempcode = "";
+                string hosstr = "", field24 = "", field12 = "", field58 = "", field42 = "", field61 = "";
+                hosstr = doc.SelectSingleNode("UpdateData/HDataRows/hospit/field0024").InnerText.Trim();
                 Dictionary<string, string> verifyList = new Dictionary<string, string>();
-                foreach (XmlNode row in nodes)
+                //获取分摊医院信息
+                for (int i = 0; i < hosstr.Split('|').Length; i++)
                 {
-                    //if (row["field0056"].InnerText.Trim().Length > 0)
-                    //    field0062 = row["field0056"].InnerText.Trim();
-                    //else
-                    //    field0062 = row["field0062"].InnerText.Trim();
-                    //if (!verifyList.ContainsKey(field0062))
-                    //    //field0057 名称_分摊
-                    //    verifyList.Add(field0062, row["field0057"].InnerText);
-                    ////编码分摊放到最后一个
-                    //hosRow = hosRow + string.Format(hosRow, row["field0056"].InnerText, row["field0057"].InnerText,
-                    //row["field0058"].InnerText, row["field0059"].InnerText,  row["field0061"].InnerText, field0062);
-
-                    if (row["field0024"].InnerText.Trim().Length > 0)
-                        tempcode = row["field0024"].InnerText.Trim();
-                    if (!verifyList.ContainsKey(tempcode))
+                    field24 = doc.SelectSingleNode("UpdateData/HDataRows/hospit/field0024").InnerText.Trim().Split('|')[i];
+                    field12 = doc.SelectSingleNode("UpdateData/HDataRows/hospit/field0012").InnerText.Trim().Split('|')[i];
+                    field58 = doc.SelectSingleNode("UpdateData/HDataRows/hospit/field0058").InnerText.Trim().Split('|')[i];
+                    field42 = doc.SelectSingleNode("UpdateData/HDataRows/hospit/field0042").InnerText.Trim().Split('|')[i];
+                    field61 = doc.SelectSingleNode("UpdateData/HDataRows/hospit/field0061").InnerText.Trim().Split('|')[i];
+                    if (!verifyList.ContainsKey(field24))
                         //field0057 名称_分摊
-                        verifyList.Add(tempcode, row["field0012"].InnerText);
+                        verifyList.Add(field24, field12);
                     //编码分摊放到最后一个
-                    hospitalRows = hospitalRows + string.Format(hosRow, row["field0024"].InnerText, row["field0012"].InnerText,
-                    row["field0058"].InnerText, row["field0042"].InnerText, row["field0061"].InnerText, tempcode);
+                    hospitalRows = hospitalRows + string.Format(hosRow, field24, field12,
+                    field58, field42, field61, field24);
                 }
+                //foreach (XmlNode row in nodes)
+                //{
+                //    //if (row["field0056"].InnerText.Trim().Length > 0)
+                //    //    field0062 = row["field0056"].InnerText.Trim();
+                //    //else
+                //    //    field0062 = row["field0062"].InnerText.Trim();
+                //    //if (!verifyList.ContainsKey(field0062))
+                //    //    //field0057 名称_分摊
+                //    //    verifyList.Add(field0062, row["field0057"].InnerText);
+                //    ////编码分摊放到最后一个
+                //    //hosRow = hosRow + string.Format(hosRow, row["field0056"].InnerText, row["field0057"].InnerText,
+                //    //row["field0058"].InnerText, row["field0059"].InnerText,  row["field0061"].InnerText, field0062);
+
+                //    if (row["field0024"].InnerText.Trim().Length > 0)
+                //        tempcode = row["field0024"].InnerText.Trim();
+                //    if (!verifyList.ContainsKey(tempcode))
+                //        //field0057 名称_分摊
+                //        verifyList.Add(tempcode, row["field0012"].InnerText);
+                //    //编码分摊放到最后一个
+                //    hospitalRows = hospitalRows + string.Format(hosRow, row["field0024"].InnerText, row["field0012"].InnerText,
+                //    row["field0058"].InnerText, row["field0042"].InnerText, row["field0061"].InnerText, tempcode);
+                //}
 
                 if (verifyList.ContainsKey("OA_19888"))
                     throw new Exception("费用不能分摊到【跨区跨院活动】，请选择具体医院");
@@ -611,10 +628,20 @@ namespace TR.OA.BusHelper
                     //收款方节点不能为空
                     if (nodes.Count == 0)
                         throw new Exception("收款方不能为空");
-                    foreach (XmlNode row in nodes)
+                    string paystr = "", field0048 = "", field0049 = "", field0050 = "", field0051 = "";
+                    paystr = doc.SelectSingleNode("UpdateData/PDataRows/payee/field0048").InnerText.Trim();
+                    for (int i = 0; i < paystr.Split('|').Length; i++)
                     {
-                        bankRows = bankRows + string.Format(bankRow, row["field0048"].InnerText, row["field0049"].InnerText, row["field0050"].InnerText, row["field0051"].InnerText);
+                        field0048 = doc.SelectSingleNode("UpdateData/PDataRows/payee/field0048").InnerText.Trim();
+                        field0049 = doc.SelectSingleNode("UpdateData/PDataRows/payee/field0049").InnerText.Trim();
+                        field0050 = doc.SelectSingleNode("UpdateData/PDataRows/payee/field0050").InnerText.Trim();
+                        field0051 = doc.SelectSingleNode("UpdateData/PDataRows/payee/field0051").InnerText.Trim();
+                        bankRows = bankRows + string.Format(bankRow, field0048, field0049, field0050, field0051);
                     }
+                    //foreach (XmlNode row in nodes)
+                    //{
+                    //    bankRows = bankRows + string.Format(bankRow, row["field0048"].InnerText, row["field0049"].InnerText, row["field0050"].InnerText, row["field0051"].InnerText);
+                    //}
                 }
 
                 #endregion 开户行

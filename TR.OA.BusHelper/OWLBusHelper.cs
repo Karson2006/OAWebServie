@@ -1,17 +1,16 @@
-﻿using System;
+﻿using iTR.Lib;
+using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Xml;
-using iTR.Lib;
-using Newtonsoft.Json;
-using System.Threading.Tasks;
 using System.Linq;
+using System.Xml;
 
 namespace TR.OA.BusHelper
 {
     public class OWLBusHelper
     {
         private SQLServerHelper runner = null;
+        private string test = "";
 
         public OWLBusHelper()
         {
@@ -624,16 +623,37 @@ namespace TR.OA.BusHelper
 
                 Dictionary<string, string> attDic = new Dictionary<string, string>();
 
-                nodes = doc.SelectNodes("UpdateData/ADataRows/data");
-
-                //附件节点不能为空
-                if (nodes.Count == 0)
-                    throw new Exception("附件不能为空");
+                XmlNode typenode = doc.SelectSingleNode("UpdateData/ADataRows/data/Type");
+                XmlNode fileIDnode = doc.SelectSingleNode("UpdateData/ADataRows/data/FileID");
                 string attid = "";
-                foreach (XmlNode row in nodes)
+                string[] attTypesName = null;
+                string[] attTypeIDs = null;
+                //附件节点不能为空
+                if (typenode != null && typenode.InnerText.Trim().Length > 0)
+                {
+                    if (typenode.InnerText.ToString().Trim().Length == 0)
+                    {
+                        throw new Exception("附件名称为空");
+                    }
+                    attTypesName = typenode.InnerText.ToString().Trim().Split('|');
+                }
+                else
+                    throw new Exception("附件名称为空");
+                if (fileIDnode != null && fileIDnode.InnerText.Trim().Length > 0)
+                {
+                    if (fileIDnode.InnerText.ToString().Trim().Length == 0)
+                    {
+                        throw new Exception("缺少附件ID");
+                    }
+                    attTypeIDs = fileIDnode.InnerText.ToString().Trim().Split('|');
+                }
+                else
+                    throw new Exception("缺少附件ID");
+
+                for (int i = 0; i < attTypesName.Length; i++)
                 {
                     attid = "";
-                    switch (row["Type"].InnerText.ToString().Trim())
+                    switch (attTypesName[i])
                     {
                         case "学术材料": attid = "field0032"; break;
                         case "会议议程": attid = "field0033"; break;
@@ -645,7 +665,7 @@ namespace TR.OA.BusHelper
                     if (!attDic.ContainsValue(attid))
                     {
                         //FileID做唯一键,不会重复
-                        attDic.Add(row["FileID"].InnerText.ToString().Trim(), attid);
+                        attDic.Add(attTypeIDs[i], attid);
                     }
                 }
 

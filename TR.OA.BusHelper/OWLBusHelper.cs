@@ -648,7 +648,8 @@ namespace TR.OA.BusHelper
 
                 #region 获取附件
 
-                Dictionary<string, string> attDic = new Dictionary<string, string>();
+                //键是附件 字段名字，第二个Dictionary键是FileID,值是sub_Perefrence
+                Dictionary<string, Dictionary<string, string>> attDic = new Dictionary<string, Dictionary<string, string>>();
 
                 XmlNode typenode = doc.SelectSingleNode("UpdateData/ADataRows/data/Type");
                 XmlNode fileIDnode = doc.SelectSingleNode("UpdateData/ADataRows/data/FileID");
@@ -677,9 +678,13 @@ namespace TR.OA.BusHelper
                 else
                     throw new Exception("缺少附件ID");
 
+                //生成sub_prefrence
+                byte[] gb = Guid.NewGuid().ToByteArray();
+                long subid = BitConverter.ToInt64(gb, 0);
                 for (int i = 0; i < attTypesName.Length; i++)
                 {
                     attid = "";
+
                     switch (attTypesName[i])
                     {
                         case "学术材料": attid = "field0032"; break;
@@ -689,10 +694,16 @@ namespace TR.OA.BusHelper
                         case "会议照片": attid = "field0036"; break;
                         case "参会名单": attid = "field0037"; break;
                     }
-                    if (!attDic.ContainsValue(attid))
+                    if (!attDic.ContainsKey(attid))
                     {
+                        ////FileID做唯一键,不会重复
+                        //attDic.Add(attTypeIDs[i], attid + "-" + subid);
+
                         //FileID做唯一键,不会重复
-                        attDic.Add(attTypeIDs[i], attid);
+                        attDic.Add(attid, new Dictionary<string, string> { { attTypeIDs[i].ToString(), subid.ToString() } });
+                        //生成sub_prefrence
+                        gb = Guid.NewGuid().ToByteArray();
+                        subid = BitConverter.ToInt64(gb, 0);
                     }
                 }
 
@@ -703,37 +714,37 @@ namespace TR.OA.BusHelper
                 if (node != null)
                     field0062 = node.InnerText.Trim();
 
-                if (!attDic.ContainsValue("field0032"))
+                if (!attDic.ContainsKey("field0032"))
                 {
                     throw new Exception("缺少学术材料附件");
                 }
 
                 if (field0062 != "预付款")
                 {
-                    if (!attDic.ContainsValue("field0033"))
+                    if (!attDic.ContainsKey("field0033"))
                     {
                         throw new Exception("缺少会议议程附件");
                     }
-                    if (!attDic.ContainsValue("field0034"))
+                    if (!attDic.ContainsKey("field0034"))
                     {
                         throw new Exception("缺少会议纪要附件");
                     }
-                    if (!attDic.ContainsValue("field0036"))
+                    if (!attDic.ContainsKey("field0036"))
                     {
                         throw new Exception("缺少会议照片附件");
                     }
-                    if (!attDic.ContainsValue("field0037"))
+                    if (!attDic.ContainsKey("field0037"))
                     {
                         throw new Exception("缺少学参会名单附件");
                     }
                 }
 
-                field0032 = attDic.FirstOrDefault(x => x.Value == "field0032").Key ?? "";
-                field0062 = attDic.FirstOrDefault(x => x.Value == "field0062").Key ?? "";
-                field0034 = attDic.FirstOrDefault(x => x.Value == "field0034").Key ?? "";
-                field0035 = attDic.FirstOrDefault(x => x.Value == "field0035").Key ?? "";
-                field0036 = attDic.FirstOrDefault(x => x.Value == "field0036").Key ?? "";
-                field0037 = attDic.FirstOrDefault(x => x.Value == "field0037").Key ?? "";
+                field0032 = attDic.FirstOrDefault(x => x.Key == "field0032").Key ?? "";
+                field0062 = attDic.FirstOrDefault(x => x.Key == "field0062").Key ?? "";
+                field0034 = attDic.FirstOrDefault(x => x.Key == "field0034").Key ?? "";
+                field0035 = attDic.FirstOrDefault(x => x.Key == "field0035").Key ?? "";
+                field0036 = attDic.FirstOrDefault(x => x.Key == "field0036").Key ?? "";
+                field0037 = attDic.FirstOrDefault(x => x.Key == "field0037").Key ?? "";
 
                 #endregion 附件验证
 

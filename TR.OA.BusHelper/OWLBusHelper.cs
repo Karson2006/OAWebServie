@@ -379,10 +379,13 @@ namespace TR.OA.BusHelper
                 string field0053 = "";  //可用额
                 string field0054 = "";  //在途额
                 string field0063 = "";  //费用来源
-                string field0065 = "";  //活动类型
+
+                string field0065 = "";   //活动类型
                 string field0067 = "";  //成本中心_归档
                 string field1000 = "";  //已用额
-                string field0062 = ""; //付款方式
+                string field0062 = "";  //付款方式
+
+                string field0064 = ""; //付款阶段
                 string bankRows = "", hospitalRows = "";
 
                 #endregion 参数定义
@@ -392,7 +395,6 @@ namespace TR.OA.BusHelper
 
                 #region xml取值
 
-                //看到下面的代码不要怀疑自己的眼睛
                 XmlNode node = doc.SelectSingleNode("UpdateData/field0002");
                 if (node != null && node.InnerText.Trim().Length > 0)
                     EmployeeeID = node.InnerText;
@@ -535,7 +537,7 @@ namespace TR.OA.BusHelper
                 if (decimal.Parse(field0022) < decimal.Parse(field0023))
                     throw new Exception("报销金额不能大于申请金额");
 
-                if (decimal.Parse(field0017) < decimal.Parse(field0023))
+                if (decimal.Parse(field0017) < decimal.Parse(field0053))
                     throw new Exception("报销金额不能大于月度可用额");
 
                 #endregion 金额判断
@@ -614,6 +616,11 @@ namespace TR.OA.BusHelper
                 node = doc.SelectSingleNode("UpdateData/field0023");
                 if (node != null)
                     field0047 = node.InnerText.Trim();
+
+                //if ((int.Parse(field0047) + int.Parse(field0023)) < int.Parse(field0017))
+                //{
+                //    throw new Exception("总金额不能大于月度申请总额");
+                //}
 
                 //个人报销金额小于报销金额有第三方
                 if (int.Parse(field0047) < int.Parse(field0023))
@@ -752,7 +759,7 @@ namespace TR.OA.BusHelper
                     throw new Exception("缺少学术材料附件");
                 }
 
-                if (field0062 != "预付款")
+                if (!field0062.Contains("预付款"))
                 {
                     if (!attDic.ContainsKey("field0033"))
                     {
@@ -771,7 +778,8 @@ namespace TR.OA.BusHelper
                         throw new Exception("缺少参会名单附件");
                     }
                 }
-
+                //更新付款阶段
+                field0064 = field0062.Split('-')[1];
                 //获取原始fileid数组
                 field0032 = attDic.FirstOrDefault(x => x.Key == "field0032").Value ?? "";
                 field0062 = attDic.FirstOrDefault(x => x.Key == "field0062").Value ?? "";
@@ -817,7 +825,9 @@ namespace TR.OA.BusHelper
                                     <column name=""是否按计划""><value>{field0044}</value></column>
                                     <column name=""费用类型""><value>学术活动费</value></column>
                                     <column name=""个人报销金额""><value>{field0047}</value></column>
+                                    <column name=""收款方式""><value>0</value></column>
                                     <column name=""费用来源""><value>{field0063}</value></column>
+                                    <column name=""付款阶段""><value>{field0064}</value></column>
                                     <column name=""可用额""><value>{field0053}</value></column>
                                     <column name=""在途额""><value>{field0054}</value></column>
                                     <column name=""活动类型""><value>{field0065}</value></column>

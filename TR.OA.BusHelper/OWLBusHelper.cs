@@ -1,4 +1,5 @@
 ﻿using iTR.Lib;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -628,10 +629,21 @@ namespace TR.OA.BusHelper
                     //收款方节点不能为空
                     if (nodes.Count == 0)
                         throw new Exception("收款方不能为空");
-                    string paystr = "", field0048 = "", field0049 = "", field0050 = "", field0051 = "";
-                    paystr = doc.SelectSingleNode("UpdateData/PDataRows/payee/field0048").InnerText.Trim();
-                    for (int i = 0; i < paystr.Split('|').Length; i++)
+                    string field0048 = "", field0049 = "", field0050 = "", field0051 = "";
+                    string[] paystr = null;
+
+                    paystr = doc.SelectSingleNode("UpdateData/PDataRows/payee/field0048").InnerText.Trim().Split('|');
+                    if (doc.SelectSingleNode("UpdateData/PDataRows/payee/field0048") == null)
                     {
+                        throw new Exception("收款方不能为空");
+                    }
+                    for (int i = 0; i < paystr.Length; i++)
+                    {
+                        //过滤空字符
+                        if (paystr[i].Trim().Length == 0)
+                        {
+                            continue;
+                        }
                         field0048 = doc.SelectSingleNode("UpdateData/PDataRows/payee/field0048").InnerText.Trim();
                         field0049 = doc.SelectSingleNode("UpdateData/PDataRows/payee/field0049").InnerText.Trim();
                         field0050 = doc.SelectSingleNode("UpdateData/PDataRows/payee/field0050").InnerText.Trim();
@@ -648,8 +660,7 @@ namespace TR.OA.BusHelper
 
                 #region 获取附件
 
-                //键是附件 字段名字，第二个Dictionary键是FileID,值是sub_Perefrence
-                Dictionary<string, Dictionary<string, string>> attDic = new Dictionary<string, Dictionary<string, string>>();
+                Dictionary<string, string> attDic = new Dictionary<string, string>();
 
                 XmlNode typenode = doc.SelectSingleNode("UpdateData/ADataRows/data/Type");
                 XmlNode fileIDnode = doc.SelectSingleNode("UpdateData/ADataRows/data/FileID");
@@ -678,32 +689,54 @@ namespace TR.OA.BusHelper
                 else
                     throw new Exception("缺少附件ID");
 
-                //生成sub_prefrence
-                byte[] gb = Guid.NewGuid().ToByteArray();
-                long subid = BitConverter.ToInt64(gb, 0);
                 for (int i = 0; i < attTypesName.Length; i++)
                 {
-                    attid = "";
-
-                    switch (attTypesName[i])
+                    //过滤空字符 肯定有五个| 不一定有值
+                    if (attTypesName[i].Trim().Length == 0)
                     {
-                        case "学术材料": attid = "field0032"; break;
-                        case "会议议程": attid = "field0033"; break;
-                        case "会议纪要": attid = "field0034"; break;
-                        case "课酬附件": attid = "field0035"; break;
-                        case "会议照片": attid = "field0036"; break;
-                        case "参会名单": attid = "field0037"; break;
+                        continue;
                     }
+                    attid = "";
+                    if (attTypesName[i].Contains("学术材料"))
+                    {
+                        attid = "field0032";
+                    }
+                    else if (attTypesName[i].Contains("会议议程"))
+                    {
+                        attid = "field0033";
+                    }
+                    else if (attTypesName[i].Contains("会议纪要"))
+                    {
+                        attid = "field0034";
+                    }
+                    else if (attTypesName[i].Contains("课酬附件"))
+                    {
+                        attid = "field0035";
+                    }
+                    else if (attTypesName[i].Contains("会议照片"))
+                    {
+                        attid = "field0036";
+                    }
+                    else if (attTypesName[i].Contains("参会名单"))
+                    {
+                        attid = "field0037";
+                    }
+                    //switch (attTypesName[i])
+                    //{
+                    //    case "学术材料": attid = "field0032"; break;
+                    //    case "会议议程": attid = "field0033"; break;
+                    //    case "会议纪要": attid = "field0034"; break;
+                    //    case "课酬附件": attid = "field0035"; break;
+                    //    case "会议照片": attid = "field0036"; break;
+                    //    case "参会名单": attid = "field0037"; break;
+                    //}
                     if (!attDic.ContainsKey(attid))
                     {
                         ////FileID做唯一键,不会重复
                         //attDic.Add(attTypeIDs[i], attid + "-" + subid);
 
                         //FileID做唯一键,不会重复
-                        attDic.Add(attid, new Dictionary<string, string> { { attTypeIDs[i].ToString(), subid.ToString() } });
-                        //生成sub_prefrence
-                        gb = Guid.NewGuid().ToByteArray();
-                        subid = BitConverter.ToInt64(gb, 0);
+                        attDic.Add(attid, attTypeIDs[i]);
                     }
                 }
 
@@ -735,16 +768,17 @@ namespace TR.OA.BusHelper
                     }
                     if (!attDic.ContainsKey("field0037"))
                     {
-                        throw new Exception("缺少学参会名单附件");
+                        throw new Exception("缺少参会名单附件");
                     }
                 }
 
-                field0032 = attDic.FirstOrDefault(x => x.Key == "field0032").Key ?? "";
-                field0062 = attDic.FirstOrDefault(x => x.Key == "field0062").Key ?? "";
-                field0034 = attDic.FirstOrDefault(x => x.Key == "field0034").Key ?? "";
-                field0035 = attDic.FirstOrDefault(x => x.Key == "field0035").Key ?? "";
-                field0036 = attDic.FirstOrDefault(x => x.Key == "field0036").Key ?? "";
-                field0037 = attDic.FirstOrDefault(x => x.Key == "field0037").Key ?? "";
+                //获取原始fileid数组
+                field0032 = attDic.FirstOrDefault(x => x.Key == "field0032").Value ?? "";
+                field0062 = attDic.FirstOrDefault(x => x.Key == "field0062").Value ?? "";
+                field0034 = attDic.FirstOrDefault(x => x.Key == "field0034").Value ?? "";
+                field0035 = attDic.FirstOrDefault(x => x.Key == "field0035").Value ?? "";
+                field0036 = attDic.FirstOrDefault(x => x.Key == "field0036").Value ?? "";
+                field0037 = attDic.FirstOrDefault(x => x.Key == "field0037").Value ?? "";
 
                 #endregion 附件验证
 
@@ -812,9 +846,8 @@ namespace TR.OA.BusHelper
                 #endregion formdata
 
                 string oaid = Guid.NewGuid().ToString();
-                string attids = string.Join("|", attDic.Keys.ToArray());
                 //插入流程数据
-                sql = $@"Insert Into DataService.dbo.OATask([FOAID],[FTemplateCode],[FSenderLoginName],[FEmployeeCode],[FEmployeeName],[FSubject],[FData],[FAttachments]) Values('{formID}','O202004','{loginName}','{field0010}','{EmployeeeName}','{"学术活动费用支付单-YRB-" + EmployeeeName + "-" + DateTime.Now.ToString()}' , '{formData}','{attids}')";
+                sql = $@"Insert Into DataService.dbo.OATask([FOAID],[FTemplateCode],[FSenderLoginName],[FEmployeeCode],[FEmployeeName],[FSubject],[FData]) Values('{formID}','O202004','{loginName}','{field0010}','{EmployeeeName}','{"学术活动费用支付单-YRB-" + EmployeeeName + "-" + DateTime.Now.ToString()}' , '{formData}')";
                 runner.ExecuteSqlNone(sql);
                 result = "<UpdateData><Result>True</Result><Description></Description></UpdateData>";
             }

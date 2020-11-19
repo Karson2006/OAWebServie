@@ -11,7 +11,6 @@ namespace TR.OA.BusHelper
     public class OWLBusHelper
     {
         private SQLServerHelper runner = null;
-        private string test = "";
 
         public OWLBusHelper()
         {
@@ -617,11 +616,14 @@ namespace TR.OA.BusHelper
                 if (node != null)
                     field0047 = node.InnerText.Trim();
 
-                //if ((int.Parse(field0047) + int.Parse(field0023)) < int.Parse(field0017))
+                //if ((int.Parse(field0047) + int.Parse(field0023)) <= int.Parse(field0017))
                 //{
-                //    throw new Exception("总金额不能大于月度申请总额");
+                //    throw new Exception("报销金额不能大于月度申请总额");
                 //}
-
+                //if ((int.Parse() + int.Parse()) = int.Parse())
+                //{
+                //    throw new Exception("报销金额不能与总金额");
+                //}
                 //个人报销金额小于报销金额有第三方
                 if (int.Parse(field0047) < int.Parse(field0023))
                 {

@@ -663,7 +663,7 @@ namespace TR.OA.BusHelper
                     }
                     //总金额和个人报销金额 + 第三方付款不相等
 
-                    if ((int.Parse(field0047)+ thirdpay) <= int.Parse(field0023))
+                    if (int.Parse(field0023)< (int.Parse(field0047) + thirdpay))
                     {
                         throw new Exception("个人报销金额加第三方付款金额不能大于总金额");
                     }

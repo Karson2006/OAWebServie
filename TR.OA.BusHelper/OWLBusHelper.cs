@@ -627,6 +627,7 @@ namespace TR.OA.BusHelper
                 //个人报销金额小于报销金额有第三方
                 if (int.Parse(field0047) < int.Parse(field0023))
                 {
+                    int thirdpay = 0;
                     Dictionary<string, string> bankDic = new Dictionary<string, string>();
 
                     string bankRow = @"<row><column name=""收款方""><value>{0}</value></column>
@@ -655,16 +656,26 @@ namespace TR.OA.BusHelper
                         }
                         field0048 = doc.SelectSingleNode("UpdateData/PDataRows/payee/field0048").InnerText.Trim();
                         field0049 = doc.SelectSingleNode("UpdateData/PDataRows/payee/field0049").InnerText.Trim();
-                        field0050 = doc.SelectSingleNode("UpdateData/PDataRows/payee/field0050").InnerText.Trim();
+                        field0050 = doc.SelectSingleNode("UpdateData/PDataRows/payee/field0050").InnerText.Trim()==""?"0": doc.SelectSingleNode("UpdateData/PDataRows/payee/field0050").InnerText.Trim();
+                        thirdpay += int.Parse(field0050);
                         field0051 = doc.SelectSingleNode("UpdateData/PDataRows/payee/field0051").InnerText.Trim();
                         bankRows = bankRows + string.Format(bankRow, field0048, field0049, field0050, field0051);
+                    }
+                    //总金额和个人报销金额 + 第三方付款不相等
+
+                    if ((int.Parse(field0047)+ thirdpay) <= int.Parse(field0023))
+                    {
+                        throw new Exception("个人报销金额加第三方付款金额不能大于总金额");
                     }
                     //foreach (XmlNode row in nodes)
                     //{
                     //    bankRows = bankRows + string.Format(bankRow, row["field0048"].InnerText, row["field0049"].InnerText, row["field0050"].InnerText, row["field0051"].InnerText);
                     //}
                 }
-
+                else
+                {
+                    throw new Exception("个人报销金额不能大于总金额");
+                }
                 #endregion 开户行
 
                 #region 获取附件

@@ -859,7 +859,7 @@ namespace TR.OA.BusHelper
 
                 string oaid = Guid.NewGuid().ToString();
                 //插入流程数据
-                sql = $@"Insert Into DataService.dbo.OATask([FOAID],[FTemplateCode],[FSenderLoginName],[FEmployeeCode],[FEmployeeName],[FSubject],[FData]) Values('{formID}','O202004','{loginName}','{field0010}','{EmployeeeName}','{"学术活动费用支付单-YRB-" + EmployeeeName + "-" + DateTime.Now.ToString()}' , '{formData}')";
+                sql = $@"Insert Into DataService.dbo.OATask([FTemplateCode],[FSenderLoginName],[FEmployeeCode],[FEmployeeName],[FSubject],[FData]) Values('O202004','{loginName}','{field0010}','{EmployeeeName}','{"学术活动费用支付单-YRB-" + EmployeeeName + "-" + DateTime.Now.ToString()}' , '{formData}')";
                 runner.ExecuteSqlNone(sql);
                 result = "<UpdateData><Result>True</Result><Description></Description></UpdateData>";
             }

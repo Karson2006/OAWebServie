@@ -656,14 +656,14 @@ namespace TR.OA.BusHelper
                         }
                         field0048 = doc.SelectSingleNode("UpdateData/PDataRows/payee/field0048").InnerText.Trim();
                         field0049 = doc.SelectSingleNode("UpdateData/PDataRows/payee/field0049").InnerText.Trim();
-                        field0050 = doc.SelectSingleNode("UpdateData/PDataRows/payee/field0050").InnerText.Trim()==""?"0": doc.SelectSingleNode("UpdateData/PDataRows/payee/field0050").InnerText.Trim();
+                        field0050 = doc.SelectSingleNode("UpdateData/PDataRows/payee/field0050").InnerText.Trim() == "" ? "0" : doc.SelectSingleNode("UpdateData/PDataRows/payee/field0050").InnerText.Trim();
                         thirdpay += int.Parse(field0050);
                         field0051 = doc.SelectSingleNode("UpdateData/PDataRows/payee/field0051").InnerText.Trim();
                         bankRows = bankRows + string.Format(bankRow, field0048, field0049, field0050, field0051);
                     }
                     //总金额和个人报销金额 + 第三方付款不相等
 
-                    if (int.Parse(field0023)< (int.Parse(field0047) + thirdpay))
+                    if (int.Parse(field0023) < (int.Parse(field0047) + thirdpay))
                     {
                         throw new Exception("个人报销金额加第三方付款金额不能大于总金额");
                     }
@@ -676,6 +676,7 @@ namespace TR.OA.BusHelper
                 {
                     throw new Exception("个人报销金额不能大于总金额");
                 }
+
                 #endregion 开户行
 
                 #region 获取附件
@@ -883,7 +884,7 @@ namespace TR.OA.BusHelper
 
         #endregion 提交学术活动费用支付单3.0
 
-        #region UploadFile
+        #region 上传文件
 
         public string UploadFile(string xmlString)
         {
@@ -954,6 +955,39 @@ namespace TR.OA.BusHelper
             return result;
         }
 
-        #endregion UploadFile
+        #endregion 上传文件
+
+        #region 获取敏感药瑞宝敏感信息
+
+        public string GetAppSystemInfo()
+        {
+            string xmlkey = "", callType = "GetAppSystemInfo";
+            string result = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
+              "<" + callType + ">" +
+              "<Result>False</Result>" +
+              "<Description></Description></" + callType + ">";
+            try
+            {
+                string sql = "select FKey,FValue from [DataService].[dbo].[SysInfos] where FSystem='yrb'";
+                DataTable dataTable = runner.ExecuteSql(sql);
+
+                foreach (DataRow row in dataTable.Rows)
+                {
+                    xmlkey += $"<{row["FKey"]}>{row["FValue"]}</{row["FKey"]}>";
+                }
+                result = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
+          "<" + callType + ">" +
+          "<Result>True</Result>" +
+          xmlkey +
+          "<Description></Description></" + callType + ">";
+            }
+            catch (Exception err)
+            {
+                result = $"<{callType}><Result>False</Result><Description>" + err.Message + $"</Description></{callType}>";
+            }
+            return result;
+        }
+
+        #endregion 获取敏感药瑞宝敏感信息
     }
 }

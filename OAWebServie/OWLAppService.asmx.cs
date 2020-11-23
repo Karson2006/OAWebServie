@@ -5,7 +5,6 @@ using System.Web;
 using System.Web.Services;
 using TR.OA.BusHelper;
 using iTR.Lib;
- 
 
 namespace TR.OAWebServie
 {
@@ -15,11 +14,12 @@ namespace TR.OAWebServie
     [WebService(Namespace = "http://tempuri.org/")]
     [WebServiceBinding(ConformsTo = WsiProfiles.BasicProfile1_1)]
     [System.ComponentModel.ToolboxItem(false)]
-    // 若要允许使用 ASP.NET AJAX 从脚本中调用此 Web 服务，请取消注释以下行。 
+    // 若要允许使用 ASP.NET AJAX 从脚本中调用此 Web 服务，请取消注释以下行。
     // [System.Web.Script.Services.ScriptService]
     public class OWLAppService : System.Web.Services.WebService
     {
         #region GetEntertainmentExpensesList
+
         [WebMethod]
         public string GetEntertainmentExpensesList(string xmlMessage)
         {
@@ -46,6 +46,7 @@ namespace TR.OAWebServie
             FileLogger.WriteLog(logID + "|End:" + result, 1, "OAWebService", "GetEntertainmentExpensesList", "DataService");
             return result;
         }
+
         [WebMethod]
         public string GetEntertainmentExpensesListJson(string JsonMessage)
         {
@@ -55,7 +56,7 @@ namespace TR.OAWebServie
             return result;
         }
 
-        #endregion
+        #endregion GetEntertainmentExpensesList
 
         [WebMethod]
         public string SubmitEntertainmentExpensesForm(string xmlMessage)
@@ -83,18 +84,20 @@ namespace TR.OAWebServie
             FileLogger.WriteLog(logID + "|End:" + result, 1, "OAWebService", "SubmitEntertainmentExpendForm", "DataService");
             return result;
         }
+
         [WebMethod]
         public string SubmitEntertainmentExpensesFormJson(string JsonMessage)
         {
-            FileLogger.WriteLog("Json："+JsonMessage, 1, "OAWebService", "SubmitEntertainmentExpendForm", "DataService");
+            FileLogger.WriteLog("Json：" + JsonMessage, 1, "OAWebService", "SubmitEntertainmentExpendForm", "DataService");
             string xmlString = iTR.Lib.Common.Json2XML(JsonMessage, "UpdateData");
-            FileLogger.WriteLog("XML："+ xmlString, 1, "OAWebService", "SubmitEntertainmentExpendForm", "DataService");
+            FileLogger.WriteLog("XML：" + xmlString, 1, "OAWebService", "SubmitEntertainmentExpendForm", "DataService");
             string result = SubmitEntertainmentExpensesForm(xmlString);
             result = iTR.Lib.Common.XML2Json(result, "UpdateData");
             return result;
         }
 
         #region GetActivityExpensesList
+
         [WebMethod]
         public string GetActivityExpensesList(string xmlMessage)
         {
@@ -121,6 +124,7 @@ namespace TR.OAWebServie
             FileLogger.WriteLog(logID + "|End:" + result, 1, "OAWebService", "GetActivityExpensesList", "DataService");
             return result;
         }
+
         [WebMethod]
         public string GetActivityExpensesListJson(string JsonMessage)
         {
@@ -130,9 +134,7 @@ namespace TR.OAWebServie
             return result;
         }
 
-        #endregion
-
-
+        #endregion GetActivityExpensesList
 
         #region 提交学术费用单
 
@@ -146,6 +148,7 @@ namespace TR.OAWebServie
             result = iTR.Lib.Common.XML2Json(result, "UpdateData");
             return result;
         }
+
         /// <summary>
         /// 提交学术费用单
         /// </summary>
@@ -178,10 +181,10 @@ namespace TR.OAWebServie
             return result;
         }
 
-        #endregion
+        #endregion 提交学术费用单
 
+        #region 上传表单附件
 
-        #region  上传表单附件
         [WebMethod]
         public string UploadFile(string callType, string xmlMessage)
         {
@@ -192,7 +195,8 @@ namespace TR.OAWebServie
             string logID = Guid.NewGuid().ToString();
             try
             {
-                //     FileLogger.WriteLog(logID + "|Start:" + xmlMessage, 1, "", callType);
+                FileLogger.WriteLog(logID + "|Start:" + xmlMessage, 1, "OAWebService", "UploadFile", "DataService");
+
                 if (Common.CheckAuthCode(callType, xmlMessage))
                 {
                     OWLBusHelper regApp = new OWLBusHelper();
@@ -206,18 +210,64 @@ namespace TR.OAWebServie
                           "<Result>False</Result>" +
                           "<Description>" + err.Message + "</Description></" + callType + ">";
             }
-            //  FileLogger.WriteLog(logID + "|End:" + result, 1, "", callType);
+            FileLogger.WriteLog(logID + "|End:" + result, 1, "OAWebService", "UploadFile", "DataService");
             return result;
         }
 
         [WebMethod]
         public string UploadFileJson(string callType, string JsonMessage)
         {
+            FileLogger.WriteLog("Json：" + JsonMessage, 1, "OAWebService", "UploadFileJson", "DataService");
             string xmlString = iTR.Lib.Common.Json2XML(JsonMessage, "UploadFile");
+            FileLogger.WriteLog("XML：" + xmlString, 1, "OAWebService", "UploadFileJson", "DataService");
             string result = UploadFile(callType, xmlString);
             result = iTR.Lib.Common.XML2Json(result, "UploadFile");
             return result;
         }
-        #endregion
+
+        #endregion 上传表单附件
+
+        #region 获取药瑞宝敏感信息
+
+        [WebMethod]
+        public string GetAppSystemInfo(string callType, string xmlMessage)
+        {
+            string result = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
+               "<" + callType + ">" +
+               "<Result>False</Result>" +
+               "<Description></Description></" + callType + ">";
+            string logID = Guid.NewGuid().ToString();
+            try
+            {
+                FileLogger.WriteLog(logID + "|Start:" + xmlMessage, 1, "OAWebService", "GetSystemInfo", "DataService");
+                if (Common.CheckAuthCode(callType, xmlMessage))
+                {
+                    OWLBusHelper regApp = new OWLBusHelper();
+                    regApp.GetAppSystemInfo();
+                }
+            }
+            catch (Exception err)
+            {
+                result = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
+                          "<" + callType + ">" +
+                          "<Result>False</Result>" +
+                          "<Description>" + err.Message + "</Description></" + callType + ">";
+            }
+            FileLogger.WriteLog(logID + "|End:" + result, 1, "OAWebService", "GetSystemInfo", "DataService");
+            return result;
+        }
+
+        [WebMethod]
+        public string GetAppSystemInfoJson(string callType, string JsonMessage)
+        {
+            FileLogger.WriteLog("Json：" + JsonMessage, 1, "OAWebService", "GetAppSystemInfoJson", "DataService");
+            string xmlString = iTR.Lib.Common.Json2XML(JsonMessage, "GetSystemInfo");
+            FileLogger.WriteLog("XML：" + xmlString, 1, "OAWebService", "GetAppSystemInfoJson", "DataService");
+            string result = UploadFile(callType, xmlString);
+            result = iTR.Lib.Common.XML2Json(result, "GetSystemInfo");
+            return result;
+        }
+
+        #endregion 获取药瑞宝敏感信息
     }
 }

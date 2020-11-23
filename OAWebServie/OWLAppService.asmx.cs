@@ -239,11 +239,11 @@ namespace TR.OAWebServie
             string logID = Guid.NewGuid().ToString();
             try
             {
-                FileLogger.WriteLog(logID + "|Start:" + xmlMessage, 1, "OAWebService", "GetSystemInfo", "DataService");
+                FileLogger.WriteLog(logID + "|Start:" + xmlMessage, 1, "OAWebService", "GetAppSystemInfo", "DataService");
                 if (Common.CheckAuthCode(callType, xmlMessage))
                 {
                     OWLBusHelper regApp = new OWLBusHelper();
-                    regApp.GetAppSystemInfo();
+                    result = regApp.GetAppSystemInfo(xmlMessage);
                 }
             }
             catch (Exception err)
@@ -253,7 +253,7 @@ namespace TR.OAWebServie
                           "<Result>False</Result>" +
                           "<Description>" + err.Message + "</Description></" + callType + ">";
             }
-            FileLogger.WriteLog(logID + "|End:" + result, 1, "OAWebService", "GetSystemInfo", "DataService");
+            FileLogger.WriteLog(logID + "|End:" + result, 1, "OAWebService", "GetAppSystemInfo", "DataService");
             return result;
         }
 
@@ -261,10 +261,10 @@ namespace TR.OAWebServie
         public string GetAppSystemInfoJson(string callType, string JsonMessage)
         {
             FileLogger.WriteLog("Json：" + JsonMessage, 1, "OAWebService", "GetAppSystemInfoJson", "DataService");
-            string xmlString = iTR.Lib.Common.Json2XML(JsonMessage, "GetSystemInfo");
+            string xmlString = iTR.Lib.Common.Json2XML(JsonMessage, "GetAppSystemInfo");
             FileLogger.WriteLog("XML：" + xmlString, 1, "OAWebService", "GetAppSystemInfoJson", "DataService");
-            string result = UploadFile(callType, xmlString);
-            result = iTR.Lib.Common.XML2Json(result, "GetSystemInfo");
+            string result = GetAppSystemInfo(callType, xmlString);
+            result = iTR.Lib.Common.XML2Json(result, "GetAppSystemInfo");
             return result;
         }
 

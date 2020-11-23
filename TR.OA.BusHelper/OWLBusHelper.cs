@@ -959,31 +959,31 @@ namespace TR.OA.BusHelper
 
         #region 获取敏感药瑞宝敏感信息
 
-        public string GetAppSystemInfo()
+        public string GetAppSystemInfo(string xmlMessage)
         {
-            string xmlkey = "", callType = "GetAppSystemInfo";
-            string result = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
-              "<" + callType + ">" +
-              "<Result>False</Result>" +
-              "<Description></Description></" + callType + ">";
+            string xmlkey = "";
+            string result;
             try
             {
+                runner = new SQLServerHelper();
                 string sql = "select FKey,FValue from [DataService].[dbo].[SysInfos] where FSystem='yrb'";
+
                 DataTable dataTable = runner.ExecuteSql(sql);
 
                 foreach (DataRow row in dataTable.Rows)
                 {
                     xmlkey += $"<{row["FKey"]}>{row["FValue"]}</{row["FKey"]}>";
                 }
+                FileLogger.WriteLog("SaveSql|End:" + xmlkey, 1, "OAWebService", "GetAppSystemInfo", "DataService");
                 result = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
-          "<" + callType + ">" +
+          "<GetAppSystemInfo>" +
           "<Result>True</Result>" +
           xmlkey +
-          "<Description></Description></" + callType + ">";
+          "<Description></Description></GetAppSystemInfo>";
             }
             catch (Exception err)
             {
-                result = $"<{callType}><Result>False</Result><Description>" + err.Message + $"</Description></{callType}>";
+                result = "<?xml version=\"1.0\" encoding=\"utf-8\"?><GetAppSystemInfo><Result>False</Result><Description>提示" + err.Message + "</Description></GetAppSystemInfo>";
             }
             return result;
         }

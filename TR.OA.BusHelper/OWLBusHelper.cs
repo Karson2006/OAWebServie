@@ -957,7 +957,7 @@ namespace TR.OA.BusHelper
 
         #endregion 上传文件
 
-        #region 获取敏感药瑞宝敏感信息
+        #region 获取药瑞宝敏感信息
 
         public string GetAppSystemInfo(string xmlMessage)
         {
@@ -988,6 +988,334 @@ namespace TR.OA.BusHelper
             return result;
         }
 
-        #endregion 获取敏感药瑞宝敏感信息
+        #endregion 获取药瑞宝敏感信息
+
+        #region 获取支付销量流程数据
+
+        #region 罗盘主页数据
+
+        public string GetPersonSummaryReport(string dataString, string FormatResult, string callType)
+        {
+            //加,连接起前面的json字符串
+            string result = "", rdataRow, datarows, yearweek = "", panelRow = "", weekindex = ",\"FWeekIndex\":";
+            List<string> dataRowList = new List<string>();
+            //初始化状态
+            //   result = string.Format(FormatResult, callType, "\"False\"", "", "");
+            //每个DataRow格式
+            string rowcontent = "{{\"dataSets\":[{{\"values\":[{{ \"value\": {0}, \"label\": \"\"}},{{ \"value\": {1}, \"label\":\"\"}}],\"label\":\"\",\"config\": {2}}}],\"name\": \"{3}\",\"Index\":\"{4}\",\"value\":\"{5}\",\"Count\":\"{6}\",\"startTime\":\"{7}\",\"endTime\":\"{8}\"}}";
+            //dataString = "{\"FWeekIndex\":\"10\",\"AuthCode\":\"1d340262-52e0-413f-b0e7-fc6efadc2ee5\",\"EmployeeID\":\"4255873149499886263\",\"BeginDate\":\"2020-08-05\",\"EndDate\":\"2020-08-31\"}";
+            try
+            {
+                //查询实体
+                RouteEntity routeEntity = JsonConvert.DeserializeObject<RouteEntity>(dataString);
+                weekindex += routeEntity.FWeekIndex;
+                weekindex += (",\"Year\":" + DateTime.Now.Year + "");
+                DateTime startTime, endTime;
+                //获取第一天和最后一天
+                Tuple<DateTime, DateTime> pertime = Common.GetPerTime(routeEntity.FWeekIndex);
+                //开始时间
+                startTime = pertime.Item1;
+                //结束时间
+                endTime = pertime.Item2;
+                //5-8使用
+                if (routeEntity.FWeekIndex != "-1000")
+                {
+                    yearweek = Common.GetYearWithWeeks(routeEntity.FWeekIndex);
+                }
+                else
+                {
+                    yearweek = routeEntity.FWeekIndex;
+                }
+                //自定义》1,签到，2,拜访，3,流程，4,支付,5,艾夫吉夫 6,销量 7,****，8，奖金
+                //目前有些数据没有，暂时跳过
+                for (int i = 1; i < 9; i++)
+                {
+                    //主要区分返回格式 和时间查询问题
+                    if (i == 3 || i == 4)
+                    {
+                        rdataRow = GetDataRow(i, rowcontent, routeEntity.EmployeeId, startTime.ToString("yyyy-MM-dd"), endTime.ToString("yyyy-MM-dd"), "");
+                        dataRowList.Add(rdataRow);
+                    }
+                    else if (i == 6)
+                    {
+                        panelRow += GetDataRow(i, rowcontent, routeEntity.EmployeeId, startTime.ToString("yyyy-MM-dd"), endTime.ToString("yyyy-MM-dd"), "");
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+                //加，拼接下面的json
+                datarows = string.Join(",", dataRowList.ToArray()) + ",";
+                //最后结果
+                result = string.Format(FormatResult, callType, "\"True\"", "\"\"", "{\"DataRow\":[" + datarows + "{" + panelRow + weekindex + "}" + "]}");
+            }
+            catch (Exception err)
+            {
+                result = string.Format(FormatResult, callType, "\"False\"", err.Message, "");
+            }
+            return result;
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="startTime"></param>
+        /// <param name="endTime"></param>
+        /// <param name="EmployeeId">团队的EmployeeId是'0001','0002'格式</param>
+        /// <param name="rowContent"></param>
+        /// <param name="type">1,签到，2,拜访，3,流程，4,待定,5,艾夫吉夫 6,丙戊酸钠 7,待支付金额，8，奖金</param>
+        /// <param name="YearOrWeek">按年查或者按周查，按年查比较特殊，sql语句会有变化</param>
+        /// <returns></returns>
+        public string GetDataRow(int viewType, string rowContent, string EmployeeId, string startTime, string endTime, string yearweek)
+        {
+            string sql = "", viewName = "", tempresult = "", routeconfig, p1, p2, partsql;
+            int total, okcount, per;
+            try
+            {
+                //产品多的时候 获取前两个产品 select t1.FProductID,t2.FProductName from ( select top 2 FProductID, COUNT(FProductID) as ProductCount from [yaodaibao].[dbo].[HospitalStock] group by FProductID order by ProductCount desc)  t1 left join (Select FID AS  FProductID, FName As FProductName From t_Items Where FClassID = '36d33d13-4f8b-4ee4-84c5-49ff7c8691c4' and FIsDeleted=0 )  t2 on t1.FProductID = t2.FProductID
+
+                //SQLServerHelper runner = new SQLServerHelper();
+                //sql = "select top 2 FProductID as  ProductID from [yaodaibao].[dbo].[HospitalStock]";
+                //DataTable dtproduct = runner.ExecuteSql(sql);
+                //p1 = dtproduct.Rows[0]["ProductID"] ==DBNull.Value? "" :dtproduct.Rows[0]["ProductID"].ToString();
+                //p2 = dtproduct.Rows[1]["ProductID"] == DBNull.Value ? "" : dtproduct.Rows[1]["ProductID"].ToString();
+
+                switch (viewType)
+                {
+                    //3,流程
+                    case 3:
+                        viewName = "流程";
+                        sql = $"Select  count(*) As Total , sum(case FState when '完成' then 1 Else 0 End) As OKCount From [v3x].[dbo].[OAProcessStatus] where '{startTime}' <= [FStart_Date]  and  [FStart_Date] <= '{ endTime }' and FStart_Member_ID in ({EmployeeId})";
+                        break;
+
+                    //4,支付
+                    case 4:
+                        viewName = "支付";
+                        sql = $"select  sum(Ffield0008) Total,sum(Ffield0008-Ffield0034) OKCount   FROM [v3x].[dbo].[formmain_3460]  where '{startTime}' <= [FStart_Date]  and  [FStart_Date] <= '{ endTime }' and Ffield0006 in ('{EmployeeId}')";
+                        break;
+                    // 6,销量
+                    case 6:
+                        viewName = "数量";
+                        sql = $"select SUM(Ffield0008) Total,SUM(Ffield0008) OKCount  from [v3x].[dbo].[formmain_6786]  where Ffield0011 in ('人员') and  '{startTime}' <= [FStart_Date]  and  [FStart_Date] <= '{ endTime }' and Ffield0014 in ('{EmployeeId}')";
+                        break;
+                    // 7,待支付金额
+                    case 7:
+                        viewName = "待支付金额";
+                        sql = "";
+                        break;
+                    //8，奖金
+                    case 8:
+                        viewName = "奖金";
+                        sql = "";
+                        break;
+                }
+                SQLServerHelper runner = new SQLServerHelper();
+                DataTable dt = runner.ExecuteSql(sql);
+                //百分比
+                total = int.Parse((dt.Rows[0]["Total"] == DBNull.Value) ? "0" : dt.Rows[0]["Total"].ToString());
+                okcount = int.Parse(dt.Rows[0]["OKCount"] == DBNull.Value ? "0" : dt.Rows[0]["OKCount"].ToString());
+                if (viewType < 5)
+                {
+                    if (total == 0)
+                    {
+                        per = 0;
+                    }
+                    else
+                    {
+                        per = okcount * 100 / total;
+                    }
+                    //获取配置文件
+                    routeconfig = Common.GetCompassConfigFromXml("Route").Replace("Quot", "\"");
+                    //DataRow数据
+                    tempresult = string.Format(rowContent, per, (100 - per), routeconfig, viewName, viewType, per + "%", total.ToString(), startTime, endTime);
+                }
+                else
+                {
+                    if (viewType == 6)
+                    {
+                        tempresult = $"\"SalesName\":\"数量\",\"SalesCount\":{okcount}";
+                    }
+                }
+            }
+            catch (Exception err)
+            {
+                throw err;
+            }
+            return tempresult;
+        }
+
+        #endregion 罗盘主页数据
+
+        #region 罗盘子页数据
+
+        //自定义》1,签到，2,拜访，3,流程，4,待定,5,艾夫吉夫 6,丙戊酸钠 7,待支付金额，8，奖金
+        public string GetComPassChildData(string dataString, string FormatResult, string callType, string childtype)
+        {
+            int childType = int.Parse(childtype);
+            string sql = "", result = "", yearweek, weekindex = ",\"FWeekIndex\":";
+            //dataString = "{\"FWeekIndex\":\"-11\",\"AuthCode\":\"1d340262-52e0-413f-b0e7-fc6efadc2ee5\",\"EmployeeID\":\"4255873149499886263\",\"BeginDate\":\"2020-08-05\",\"EndDate\":\"2020-08-31\"}";
+            string rowcontent, dataRow = "";
+            List<string> rowList = new List<string>();
+            try
+            {
+                //查询实体
+                RouteEntity routeEntity = JsonConvert.DeserializeObject<RouteEntity>(dataString);
+                weekindex += routeEntity.FWeekIndex;
+                DateTime startTime, endTime;
+                Tuple<DateTime, DateTime> pertime = Common.GetPerTime(routeEntity.FWeekIndex);
+                //开始时间
+                startTime = pertime.Item1;
+                //结束时间
+                endTime = pertime.Item2;
+                //5-8使用
+                yearweek = Common.GetYearWithWeeks(routeEntity.FWeekIndex);
+                SQLServerHelper runner = new SQLServerHelper();
+                DataTable dt = new DataTable();
+                switch (childType)
+                {
+                    case 1: break;
+                    case 2: break;
+                    //流程
+                    case 3:
+                        sql = $"SELECT [FStart_Member_Name] as FStart_Member_Name, [FSubject] as FSubject ,[FStart_Date] as StartDate,[FCurrent_Member_Name] as CurrentMemberName FROM [v3x].[dbo].[OAProcessStatus]  where   '{startTime}' <= [FStart_Date]  and [FStart_Date] <= '{endTime}' and FState in ('流转中') and FStart_Member_ID in ({routeEntity.EmployeeIds}) order by FStart_Date desc";
+                        dt = runner.ExecuteSql(sql);
+                        foreach (DataRow item in dt.Rows)
+                        {
+                            rowcontent = "{\"Time\":\"" + DateTime.Parse(item["StartDate"].ToString()).ToString("yyyy年MM月yy日") + "\",\"Subject\":\"" + item["FSubject"] + "\",\"Code\":\"" + item["FSubject"] + "\",\"CurrentName\":\"" + item["CurrentMemberName"] + "\",\"Name\":\"" + item["FStart_Member_Name"] + "\",\"startTime\":\"" + startTime.ToString("yyyyMMdd") + "\",\"endTime\":\"" + endTime.ToString("yyyyMMdd") + "\",\"FWeekIndex\":\"" + routeEntity.FWeekIndex + "\"}";
+                            rowList.Add(rowcontent);
+                        }
+                        break;
+                    //支付
+                    case 4:
+                        //Ffield0006 可为空
+                        sql = $"select Ffield0005 as PayType,Ffield0007 as PayCode ,Ffield0008 as Amount ,FApplyName as ApplyName,(Ffield0008-Ffield0034) as  Paid,Ffield0034 as Balance from [v3x].[dbo].[formmain_3460]  where   '{startTime}' <= [FStart_Date]  and [FStart_Date] <= '{endTime}' and Ffield0006 in ('{routeEntity.EmployeeIds}') order by FStart_Date desc";
+                        dt = runner.ExecuteSql(sql);
+                        foreach (DataRow item in dt.Rows)
+                        {
+                            rowcontent = "{\"Year\":\"" + DateTime.Now.ToString("yyyy") + "\",\"PayType\":\"" + item["PayType"] + "\",\"PayCode\":\"" + item["PayCode"] + "\",\"ApplyName\":\"" + item["ApplyName"] + "\",\"Paid\":\"" + item["Paid"] + "\",\"Amount\":\"" + item["Amount"] + "\",\"Balance\":\"" + item["Balance"] + "\",\"startTime\":\"" + startTime.ToString("yyyyMMdd") + "\",\"endTime\":\"" + endTime.ToString("yyyyMMdd") + "\"}";
+                            rowList.Add(rowcontent);
+                        }
+                        break;
+
+                    case 5: break;
+                    //销量
+                    case 6:
+                        //Ffield0014 可为空
+                        sql = $"select   [Ffield0002] as Hospital,[Ffield0008] as  Total FROM [v3x].[dbo].[formmain_6786]  where Ffield0011 in ('招商') and  '{startTime}' <= [FStart_Date]  and [FStart_Date] <= '{endTime}' and Ffield0014 in ('{routeEntity.EmployeeIds}') order by FStart_Date desc";
+                        dt = runner.ExecuteSql(sql);
+                        string nextpage = "false";
+                        //没有招商
+                        if (dt.Rows.Count < 0)
+                        {
+                            sql = $"select   [Ffield0002] as Hospital,[Ffield0008] as  Total FROM [v3x].[dbo].[formmain_6786]  where  '{startTime}' <= [FStart_Date]  and [FStart_Date] <= '{endTime}' and Ffield0014 in ('{routeEntity.EmployeeIds}') order by FStart_Date desc";
+                            dt = runner.ExecuteSql(sql);
+                        }
+                        //有招商
+                        else
+                        {
+                            nextpage = "true";
+                        }
+                        foreach (DataRow item in dt.Rows)
+                        {
+                            rowcontent = "{\"nextpage\":\"" + nextpage + "\",\"Year\":\"" + DateTime.Now.ToString("yyyy") + "\",\"Hospital\":\"" + item["Hospital"] + "\",\"Total\":\"" + item["Total"] + "\",\"startTime\":\"" + startTime.ToString("yyyyMMdd") + "\",\"endTime\":\"" + endTime.ToString("yyyyMMdd") + "\",\"FWeekIndex\":\"" + routeEntity.FWeekIndex + "\"}";
+                            rowList.Add(rowcontent);
+                        }
+                        break;
+
+                    case 7: break;
+                    case 8: break;
+                    default:
+                        break;
+                }
+                dataRow = string.Join(",", rowList.ToArray());
+                //最后结果
+                result = string.Format(FormatResult, callType, "\"True\"", "\"\"", "{\"DataRow\":[" + dataRow + "]}");
+            }
+            catch (Exception err)
+            {
+                result = string.Format(FormatResult, callType, "\"False\"", err.Message, "");
+            }
+
+            return result;
+        }
+
+        #endregion 罗盘子页数据
+
+        #region 支付查询
+
+        public string PayQuery(string dataString, string FormatResult, string callType)
+        {
+            string rowcontent, dataRow = "", sql = "", result = "", partsql = "";
+            List<string> rowList = new List<string>();
+            SQLServerHelper runner = new SQLServerHelper();
+            DataTable dt = new DataTable();
+            try
+            {
+                RouteEntity routeEntity = JsonConvert.DeserializeObject<RouteEntity>(dataString);
+                //未支付 只看应付余额是否为0
+                if (routeEntity.FilterType == "-1")
+                {
+                    partsql = "  and Ffield0034 > 0  ";
+                }
+                //已支付
+                else if (routeEntity.FilterType == "1")
+                {
+                    partsql = "  and Ffield0034 = 0  ";
+                }
+                //另外情况全查
+                //else
+                //Ffield0006 可为空 Ffield0009//已付
+                sql = $"select Ffield0005 as PayType,Ffield0007 as PayCode ,Ffield0008 as Amount ,FApplyName as ApplyName,(Ffield0008-Ffield0034)  as  Paid,Ffield0034 as Balance from [v3x].[dbo].[formmain_3460]  where   '{routeEntity.StartTime}' <= [FStart_Date]  and [FStart_Date] <= '{routeEntity.EndTime}' and Ffield0006 in ('{routeEntity.EmployeeIds}')  {partsql} order by FStart_Date desc";
+                dt = runner.ExecuteSql(sql);
+                foreach (DataRow item in dt.Rows)
+                {
+                    rowcontent = "{\"Year\":\"" + DateTime.Now.ToString("yyyy") + "\",\"PayType\":\"" + item["PayType"] + "\",\"PayCode\":\"" + item["PayCode"] + "\",\"ApplyName\":\"" + item["ApplyName"] + "\",\"Paid\":\"" + item["Paid"] + "\",\"Amount\":\"" + item["Amount"] + "\",\"Balance\":\"" + item["Balance"] + "\",\"startTime\":\"" + routeEntity.StartTime + "\",\"endTime\":\"" + routeEntity.EndTime + "\"}";
+                    rowList.Add(rowcontent);
+                }
+                dataRow = string.Join(",", rowList.ToArray());
+                //最后结果
+                result = string.Format(FormatResult, callType, "\"True\"", "\"\"", "{\"DataRow\":[" + dataRow + "]}");
+            }
+            catch (Exception err)
+            {
+                result = string.Format(FormatResult, callType, "\"False\"", err.Message, "");
+            }
+
+            return result;
+        }
+
+        #endregion 支付查询
+
+        #endregion 获取支付销量流程数据
     }
+
+    #region 罗盘实体类
+
+    //json转实体不区分大小写
+    public class RouteEntity
+    {
+        public string AuthCode { get; set; }
+        public string EndTime { get; set; }
+        public string StartTime { get; set; }
+
+        //主页用到
+        public string EmployeeId { get; set; }
+
+        //子页用到
+
+        public string EmployeeIds { get; set; }
+        public string FWeekIndex { get; set; }
+
+        //罗盘类型ID 1,签到，2,拜访，3,流程，4,支付,5,艾夫吉夫 6,数量 7,，8，奖金
+        public int ChildType { get; set; }
+
+        //有没有下一页
+        public string NextPage { get; set; }
+
+        //查询需要
+        public string FilterType { get; set; }
+    }
+
+    #endregion 罗盘实体类
 }

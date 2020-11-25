@@ -269,5 +269,108 @@ namespace TR.OAWebServie
         }
 
         #endregion 获取药瑞宝敏感信息
+
+        #region 获取销量，支付，流程数据
+
+        //一级个人页面
+        [WebMethod]
+        public string GetPersonSummaryReport(string JsonMessage)
+        {
+            string result = "";
+            result = GetCompassReport(JsonMessage, "GetPersonSummaryReport");
+            return result;
+        }
+
+        //流程子页面
+        [WebMethod]
+        public string GetPersonFlowReport(string JsonMessage)
+        {
+            string result = "";
+            result = GetCompassReport(JsonMessage, "GetPersonFlowReport");
+            return result;
+        }
+
+        //支付子页面
+        [WebMethod]
+        public string GetPersonPayReport(string JsonMessage)
+        {
+            string result = "";
+            result = GetCompassReport(JsonMessage, "GetPersonPayReport");
+            return result;
+        }
+
+        //销量子页面
+        [WebMethod]
+        public string GetPersonSalesReport(string JsonMessage)
+        {
+            string result = "";
+            result = GetCompassReport(JsonMessage, "GetPersonSalesReport");
+            return result;
+        }
+
+        //支付查询
+        [WebMethod]
+        public string PayQuery(string JsonMessage)
+        {
+            string result = "";
+            result = GetCompassReport(JsonMessage, "PayQuery");
+            return result;
+        }
+
+        //报表统一入口
+        public string GetCompassReport(string JsonMessage, string callType)
+        {
+            string result, FormatResult = "{{\"{0}\":{{\"Result\":{1},\"Description\":{2},\"DataRows\":{3} }} }}";
+            result = string.Format(FormatResult, callType, "\"False\"", "", "");
+            string logID = Guid.NewGuid().ToString();
+
+            try
+            {
+                FileLogger.WriteLog(logID + "Json：" + JsonMessage, 1, "OAWebService", "GetCompassReport", "DataService");
+                // FileLogger.WriteLog(logID + "|Start:" + JsonMessage, 1, "", callType);
+                if (Common.CheckAuthCode("GetData", JsonMessage, "json"))
+                {
+                    //罗盘主页
+                    if (callType == "GetPersonSummaryReport")
+                    {
+                        OWLBusHelper perRpt = new OWLBusHelper();
+                        //没有类型判断，全部获取
+                        result = perRpt.GetPersonSummaryReport(JsonMessage, FormatResult, callType);
+                    }
+                    //流程子页面
+                    else if (callType == "GetPersonFlowReport")
+                    {
+                        OWLBusHelper perChildRpt = new OWLBusHelper();
+                        result = perChildRpt.GetComPassChildData(JsonMessage, FormatResult, callType, "3");
+                    }
+                    //支付子页面
+                    else if (callType == "GetPersonPayReport")
+                    {
+                        OWLBusHelper perChildRpt = new OWLBusHelper();
+                        result = perChildRpt.GetComPassChildData(JsonMessage, FormatResult, callType, "4");
+                    }
+                    //销量子页面
+                    else if (callType == "GetPersonSalesReport")
+                    {
+                        OWLBusHelper perChildRpt = new OWLBusHelper();
+                        result = perChildRpt.GetComPassChildData(JsonMessage, FormatResult, callType, "6");
+                    }
+                    //支付查询
+                    else if (callType == "PayQuery")
+                    {
+                        OWLBusHelper perChildRpt = new OWLBusHelper();
+                        result = perChildRpt.PayQuery(JsonMessage, FormatResult, callType);
+                    }
+                }
+            }
+            catch (Exception err)
+            {
+                result = string.Format(FormatResult, callType, "\"False\"", err.Message, "");
+            }
+            FileLogger.WriteLog(logID + "Json：" + result, 1, "OAWebService", "GetCompassReport", "DataService");
+            return result;
+        }
+
+        #endregion 获取销量，支付，流程数据
     }
 }

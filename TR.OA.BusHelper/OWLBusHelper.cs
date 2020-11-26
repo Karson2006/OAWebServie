@@ -996,8 +996,10 @@ namespace TR.OA.BusHelper
 
         public string GetPersonSummaryReport(string dataString, string FormatResult, string callType)
         {
+            FormatResult = "{{\"{0}\":{{\"Result\":{1},\"Description\":{2},\"DataRows\":{3} }} }}";
+            string result = string.Format(FormatResult, callType, "\"False\"", "", "");
             //加,连接起前面的json字符串
-            string result = "", rdataRow, datarows, yearweek = "", panelRow = "", weekindex = ",\"FWeekIndex\":";
+            string rdataRow, datarows, yearweek = "", panelRow = "", weekindex = ",\"FWeekIndex\":";
             List<string> dataRowList = new List<string>();
             //初始化状态
             //   result = string.Format(FormatResult, callType, "\"False\"", "", "");
@@ -1086,18 +1088,23 @@ namespace TR.OA.BusHelper
                     //3,流程
                     case 3:
                         viewName = "流程";
-                        sql = $"Select  count(*) As Total , sum(case FState when '完成' then 1 Else 0 End) As OKCount From [v3x].[dbo].[OAProcessStatus] where '{startTime}' <= [FStart_Date]  and  [FStart_Date] <= '{ endTime }' and FStart_Member_ID in ({EmployeeId})";
+                        sql = $"SELECT COUNT(*) Total, sum(case t1.STATE when '3' then 1 Else 0 End) As OKCount FROM COL_SUMMARY t1 LEFT JOIN ORG_MEMBER t2 ON t1.START_MEMBER_ID = t2.ID LEFT JOIN ORG_MEMBER t3 ON t1.current_nodes_info = CAST(t3.ID AS nvarchar(20)) WHERE t1.State IN( 0, 3 ) AND START_DATE >= '20200801' AND '{ startTime }' <= t1.[START_DATE] and t1.[START_DATE] <= '{ endTime }' and t1.START_MEMBER_ID in ({EmployeeId})";
+                        //sql = $"SELECT t1.ID, t1.[SUBJECT], t1.START_MEMBER_ID, t1.STATE ISTATE, t1.[START_DATE], DATEDIFF(HOUR, t1.[START_DATE], Isnull(t1.Finish_Date, getdate())) AS Hours, t1.Finish_Date, (CASE t1.STATE WHEN 3 THEN '完成' WHEN 0 THEN '流转中' END ) AS STATE, t2.[name] AS START_MEMBER_Name, Isnull( t3.[Name], '' ) AS Current_Member_Name, t1.current_nodes_info Current_Member_ID FROM COL_SUMMARY t1 LEFT JOIN ORG_MEMBER t2 ON t1.START_MEMBER_ID = t2.ID  LEFT JOIN ORG_MEMBER t3 ON t1.current_nodes_info = CAST(t3.ID AS nvarchar(20)) WHERE  t1.State IN( 0, 3 ) AND START_DATE >= '20200801' AND '{ endTime }' <= t1.[START_DATE]  and t1.[START_DATE] <= '{ endTime }' and t1.START_MEMBER_ID in ({EmployeeId}) AND t1.STATE in (0)";
+                        //sql = $"Select  count(*) As Total , sum(case FState when '完成' then 1 Else 0 End) As OKCount From [DataService].[dbo].[OAProcessStatus] where '{startTime}' <= [FStart_Date]  and  [FStart_Date] <= '{ endTime }' and FStart_Member_ID in ({EmployeeId})";
                         break;
 
                     //4,支付
                     case 4:
                         viewName = "支付";
-                        sql = $"select  sum(Ffield0008) Total,sum(Ffield0008-Ffield0034) OKCount   FROM [v3x].[dbo].[formmain_3460]  where '{startTime}' <= [FStart_Date]  and  [FStart_Date] <= '{ endTime }' and Ffield0006 in ('{EmployeeId}')";
+                        sql = $"SELECT SUM(isnull(field0008, 0 )) Total,SUM(field0008 - field0034) OKCount FROM [v3x].[dbo].[formmain_3460] t1 LEFT JOIN v3x.dbo.ORG_MEMBER t2 ON t1.field0006 = t2.ID where'{startTime}' <= t1.start_date and t1.start_date <= '{endTime}' and t1.field0006 in ('{EmployeeId}')";
+                        //sql = $"SELECT  isnull( [field0002], '' ) field0002, isnull( [field0004], '' ) field0004, isnull( [field0005], '' ) field0005, isnull(field0006, '') field0006, t2.NAME AS FApplyName, isnull( [field0007], '' ) field0007, isnull( [field0008], 0 ) field0008, isnull( [field0009], 0 ) field0009, isnull( [field0013], '' ) field0013, isnull( [field0014], '' ) field0014, isnull( [field0031], '' ) field0031, isnull( [field0032], '' ) field0032, isnull( [field0033], '' ) field0033, isnull( [field0034], 0 ) field0034, isnull( [field0035], '' ) field0035, t1.ID AS ID, isnull(t1.start_date, '') AS Start_Date FROM [v3x].[dbo].[formmain_3460] t1 LEFT JOIN v3x.dbo.ORG_MEMBER t2 ON t1.field0006 = t2.ID  where  '{startTime}' <= t1.start_date  and t1.start_date <= '{startTime}' and t1.field0006 in ('{EmployeeId}')";
+                        //sql = $"select  sum(field0008) Total,sum(field0008-field0034) OKCount   FROM [DataService].[dbo].[formmain_3460]  where '{startTime}' <= [FStart_Date]  and  [FStart_Date] <= '{ endTime }' and field0006 in ('{EmployeeId}')";
                         break;
                     // 6,销量
                     case 6:
                         viewName = "数量";
-                        sql = $"select SUM(Ffield0008) Total,SUM(Ffield0008) OKCount  from [v3x].[dbo].[formmain_6786]  where Ffield0011 in ('人员') and  '{startTime}' <= [FStart_Date]  and  [FStart_Date] <= '{ endTime }' and Ffield0014 in ('{EmployeeId}')";
+                        sql = $"SELECT SUM(isnull(field0008, 0)) as Total, SUM(field0008) OKCount FROM [v3x].[dbo].[formmain_6786] where field0011 in ('人员') and'{ startTime }' <= start_date and start_date <= '{ endTime }' and field0014 in ('{EmployeeId}')";
+                        //sql = $"select SUM(field0008) Total,SUM(field0008) OKCount  from [DataService].[dbo].[formmain_6786]  where field0011 in ('人员') and  '{startTime}' <= [FStart_Date]  and  [FStart_Date] <= '{ endTime }' and field0014 in ('{EmployeeId}')";
                         break;
                     // 7,待支付金额
                     case 7:
@@ -1113,8 +1120,8 @@ namespace TR.OA.BusHelper
                 SQLServerHelper runner = new SQLServerHelper();
                 DataTable dt = runner.ExecuteSql(sql);
                 //百分比
-                total = int.Parse((dt.Rows[0]["Total"] == DBNull.Value) ? "0" : dt.Rows[0]["Total"].ToString());
-                okcount = int.Parse(dt.Rows[0]["OKCount"] == DBNull.Value ? "0" : dt.Rows[0]["OKCount"].ToString());
+                total = (int)double.Parse((dt.Rows[0]["Total"] == DBNull.Value) ? "0" : dt.Rows[0]["Total"].ToString());
+                okcount = (int)double.Parse(dt.Rows[0]["OKCount"] == DBNull.Value ? "0" : dt.Rows[0]["OKCount"].ToString());
                 if (viewType < 5)
                 {
                     if (total == 0)
@@ -1125,7 +1132,7 @@ namespace TR.OA.BusHelper
                     {
                         per = okcount * 100 / total;
                     }
-                    //获取配置文件
+                    // 药瑞宝已经获取 获取配置文件
                     routeconfig = Common.GetCompassConfigFromXml("Route").Replace("Quot", "\"");
                     //DataRow数据
                     tempresult = string.Format(rowContent, per, (100 - per), routeconfig, viewName, viewType, per + "%", total.ToString(), startTime, endTime);
@@ -1178,7 +1185,8 @@ namespace TR.OA.BusHelper
                     case 2: break;
                     //流程
                     case 3:
-                        sql = $"SELECT [FStart_Member_Name] as FStart_Member_Name, [FSubject] as FSubject ,[FStart_Date] as StartDate,[FCurrent_Member_Name] as CurrentMemberName FROM [v3x].[dbo].[OAProcessStatus]  where   '{startTime}' <= [FStart_Date]  and [FStart_Date] <= '{endTime}' and FState in ('流转中') and FStart_Member_ID in ({routeEntity.EmployeeIds}) order by FStart_Date desc";
+                        sql = $"SELECT t1.ID, t1.[SUBJECT], t1.START_MEMBER_ID, t1.STATE ISTATE, t1.[START_DATE], DATEDIFF(HOUR, t1.[START_DATE], Isnull(t1.Finish_Date, getdate())) AS Hours, t1.Finish_Date, (CASE t1.STATE WHEN 3 THEN '完成' WHEN 0 THEN '流转中' END ) AS STATE, t2.[name] AS START_MEMBER_Name, Isnull( t3.[Name], '' ) AS Current_Member_Name, t1.current_nodes_info Current_Member_ID FROM COL_SUMMARY t1 LEFT JOIN ORG_MEMBER t2 ON t1.START_MEMBER_ID = t2.ID  LEFT JOIN ORG_MEMBER t3 ON t1.current_nodes_info = CAST(t3.ID AS nvarchar(20)) WHERE  t1.State IN( 0, 3 ) AND START_DATE >= '20200801' AND '{ startTime }' <= t1.[START_DATE]  and t1.[START_DATE] <= '{ endTime }' and t1.START_MEMBER_ID in ({routeEntity.EmployeeIds}) AND t1.STATE not in (3)";
+                        //sql = $"SELECT [FStart_Member_Name] as FStart_Member_Name, [FSubject] as FSubject ,[FStart_Date] as StartDate,[FCurrent_Member_Name] as CurrentMemberName FROM [DataService].[dbo].[OAProcessStatus]  where   '{startTime}' <= [FStart_Date]  and [FStart_Date] <= '{endTime}' and FState in ('流转中') and FStart_Member_ID in ({routeEntity.EmployeeIds}) order by FStart_Date desc";
                         dt = runner.ExecuteSql(sql);
                         foreach (DataRow item in dt.Rows)
                         {
@@ -1189,7 +1197,7 @@ namespace TR.OA.BusHelper
                     //支付
                     case 4:
                         //Ffield0006 可为空
-                        sql = $"select Ffield0005 as PayType,Ffield0007 as PayCode ,Ffield0008 as Amount ,FApplyName as ApplyName,(Ffield0008-Ffield0034) as  Paid,Ffield0034 as Balance from [v3x].[dbo].[formmain_3460]  where   '{startTime}' <= [FStart_Date]  and [FStart_Date] <= '{endTime}' and Ffield0006 in ('{routeEntity.EmployeeIds}') order by FStart_Date desc";
+                        sql = $"select field0005 as PayType,field0007 as PayCode ,field0008 as Amount ,FApplyName as ApplyName,(field0008-field0034) as  Paid,field0034 as Balance from [DataService].[dbo].[formmain_3460]  where   '{startTime}' <= [FStart_Date]  and [FStart_Date] <= '{endTime}' and field0006 in ('{routeEntity.EmployeeIds}') order by FStart_Date desc";
                         dt = runner.ExecuteSql(sql);
                         foreach (DataRow item in dt.Rows)
                         {
@@ -1202,13 +1210,13 @@ namespace TR.OA.BusHelper
                     //销量
                     case 6:
                         //Ffield0014 可为空
-                        sql = $"select   [Ffield0002] as Hospital,[Ffield0008] as  Total FROM [v3x].[dbo].[formmain_6786]  where Ffield0011 in ('招商') and  '{startTime}' <= [FStart_Date]  and [FStart_Date] <= '{endTime}' and Ffield0014 in ('{routeEntity.EmployeeIds}') order by FStart_Date desc";
+                        sql = $"select   [field0002] as Hospital,[field0008] as  Total FROM [DataService].[dbo].[formmain_6786]  where field0011 in ('招商') and  '{startTime}' <= [FStart_Date]  and [FStart_Date] <= '{endTime}' and field0014 in ('{routeEntity.EmployeeIds}') order by FStart_Date desc";
                         dt = runner.ExecuteSql(sql);
                         string nextpage = "false";
                         //没有招商
                         if (dt.Rows.Count < 0)
                         {
-                            sql = $"select   [Ffield0002] as Hospital,[Ffield0008] as  Total FROM [v3x].[dbo].[formmain_6786]  where  '{startTime}' <= [FStart_Date]  and [FStart_Date] <= '{endTime}' and Ffield0014 in ('{routeEntity.EmployeeIds}') order by FStart_Date desc";
+                            sql = $"select   [field0002] as Hospital,[field0008] as  Total FROM [DataService].[dbo].[formmain_6786]  where  '{startTime}' <= [FStart_Date]  and [FStart_Date] <= '{endTime}' and field0014 in ('{routeEntity.EmployeeIds}') order by FStart_Date desc";
                             dt = runner.ExecuteSql(sql);
                         }
                         //有招商

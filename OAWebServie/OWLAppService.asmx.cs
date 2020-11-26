@@ -326,14 +326,17 @@ namespace TR.OAWebServie
 
             try
             {
-                FileLogger.WriteLog(logID + "Json：" + JsonMessage, 1, "OAWebService", "GetCompassReport", "DataService");
+                FileLogger.WriteLog(logID + "Json验证：" + JsonMessage + "FormatResult" + FormatResult + "callType" + callType, 1, "OAWebService", callType, "DataService");
                 // FileLogger.WriteLog(logID + "|Start:" + JsonMessage, 1, "", callType);
+                OWLBusHelper perRpt = new OWLBusHelper();
+
                 if (Common.CheckAuthCode("GetData", JsonMessage, "json"))
                 {
+                    FileLogger.WriteLog("验证Json：" + JsonMessage + "FormatResult" + FormatResult + "callType" + callType, 1, "OAWebService", callType, "DataService");
                     //罗盘主页
                     if (callType == "GetPersonSummaryReport")
                     {
-                        OWLBusHelper perRpt = new OWLBusHelper();
+                        //    OWLBusHelper perRpt = new OWLBusHelper();
                         //没有类型判断，全部获取
                         result = perRpt.GetPersonSummaryReport(JsonMessage, FormatResult, callType);
                     }
@@ -367,7 +370,7 @@ namespace TR.OAWebServie
             {
                 result = string.Format(FormatResult, callType, "\"False\"", err.Message, "");
             }
-            FileLogger.WriteLog(logID + "Json：" + result, 1, "OAWebService", "GetCompassReport", "DataService");
+            FileLogger.WriteLog(logID + "Json：" + result, 1, "OAWebService", callType, "DataService");
             return result;
         }
 

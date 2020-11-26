@@ -16,11 +16,11 @@ namespace TR.OAWebServie
         {
             Boolean result = false;
 
-            XmlDocument doc = new XmlDocument();
-            doc.LoadXml(xmlString);
             string decodeCode = "";
             if (strType == "xml")
             {
+                XmlDocument doc = new XmlDocument();
+                doc.LoadXml(xmlString);
                 XmlNode vNode = doc.SelectSingleNode(callType + "/AuthCode");
                 if (vNode == null || vNode.InnerText.Trim().Length == 0)
                     throw new Exception("授权代码不能为空");
@@ -31,7 +31,7 @@ namespace TR.OAWebServie
                     result = AuthCode == decodeCode ? true : false;
                 }
             }
-            else
+            else if (strType == "json")
             {
                 JObject obj = JObject.Parse(xmlString);
                 if (obj["AuthCode"] == null || obj["AuthCode"].ToString().Length == 0)

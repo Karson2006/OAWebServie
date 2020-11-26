@@ -1190,14 +1190,14 @@ namespace TR.OA.BusHelper
                         dt = runner.ExecuteSql(sql);
                         foreach (DataRow item in dt.Rows)
                         {
-                            rowcontent = "{\"Time\":\"" + DateTime.Parse(item["StartDate"].ToString()).ToString("yyyy年MM月yy日") + "\",\"Subject\":\"" + item["FSubject"] + "\",\"Code\":\"" + item["FSubject"] + "\",\"CurrentName\":\"" + item["CurrentMemberName"] + "\",\"Name\":\"" + item["FStart_Member_Name"] + "\",\"startTime\":\"" + startTime.ToString("yyyyMMdd") + "\",\"endTime\":\"" + endTime.ToString("yyyyMMdd") + "\",\"FWeekIndex\":\"" + routeEntity.FWeekIndex + "\"}";
+                            rowcontent = "{\"Time\":\"" + DateTime.Parse(item["START_DATE"].ToString()).ToString("yyyy年MM月yy日") + "\",\"Subject\":\"" + item["SUBJECT"] + "\",\"Code\":\"" + item["SUBJECT"] + "\",\"CurrentName\":\"" + item["Current_Member_Name"] + "\",\"Name\":\"" + item["START_MEMBER_Name"] + "\",\"startTime\":\"" + startTime.ToString("yyyyMMdd") + "\",\"endTime\":\"" + endTime.ToString("yyyyMMdd") + "\",\"FWeekIndex\":\"" + routeEntity.FWeekIndex + "\"}";
                             rowList.Add(rowcontent);
                         }
                         break;
                     //支付
                     case 4:
                         //Ffield0006 可为空
-                        sql = $"select field0005 as PayType,field0007 as PayCode ,field0008 as Amount ,FApplyName as ApplyName,(field0008-field0034) as  Paid,field0034 as Balance from [DataService].[dbo].[formmain_3460]  where   '{startTime}' <= [FStart_Date]  and [FStart_Date] <= '{endTime}' and field0006 in ('{routeEntity.EmployeeIds}') order by FStart_Date desc";
+                        sql = $"select field0005 as PayType,field0007 as PayCode ,field0008 as Amount ,t2.NAME as ApplyName,(field0008-field0034) as  Paid,field0034 as Balance from [v3x].[dbo].[formmain_3460] t1 Left Join v3x.dbo.ORG_MEMBER t2 On t1.field0006= t2.ID  where   '{startTime}' <= start_date  and start_date <= '{endTime}' and field0006 in ('{routeEntity.EmployeeIds}') order by start_date desc";
                         dt = runner.ExecuteSql(sql);
                         foreach (DataRow item in dt.Rows)
                         {
@@ -1210,13 +1210,13 @@ namespace TR.OA.BusHelper
                     //销量
                     case 6:
                         //Ffield0014 可为空
-                        sql = $"select   [field0002] as Hospital,[field0008] as  Total FROM [DataService].[dbo].[formmain_6786]  where field0011 in ('招商') and  '{startTime}' <= [FStart_Date]  and [FStart_Date] <= '{endTime}' and field0014 in ('{routeEntity.EmployeeIds}') order by FStart_Date desc";
+                        sql = $"select   [field0002] as Hospital,[field0008] as  Total FROM [v3x].[dbo].[formmain_6786]  where field0011 in ('招商') and  '{startTime}' <= start_date  and start_date <= '{endTime}' and field0014 in ('{routeEntity.EmployeeIds}') order by start_date desc";
                         dt = runner.ExecuteSql(sql);
                         string nextpage = "false";
                         //没有招商
                         if (dt.Rows.Count < 0)
                         {
-                            sql = $"select   [field0002] as Hospital,[field0008] as  Total FROM [DataService].[dbo].[formmain_6786]  where  '{startTime}' <= [FStart_Date]  and [FStart_Date] <= '{endTime}' and field0014 in ('{routeEntity.EmployeeIds}') order by FStart_Date desc";
+                            sql = $"select   [field0002] as Hospital,[field0008] as  Total FROM [v3x].[dbo].[formmain_6786]  where  '{startTime}' <= [FStart_Date]  and [FStart_Date] <= '{endTime}' and field0014 in ('{routeEntity.EmployeeIds}') order by start_date desc";
                             dt = runner.ExecuteSql(sql);
                         }
                         //有招商
@@ -1264,17 +1264,17 @@ namespace TR.OA.BusHelper
                 //未支付 只看应付余额是否为0
                 if (routeEntity.FilterType == "-1")
                 {
-                    partsql = "  and Ffield0034 > 0  ";
+                    partsql = "  and field0034 > 0  ";
                 }
                 //已支付
                 else if (routeEntity.FilterType == "1")
                 {
-                    partsql = "  and Ffield0034 = 0  ";
+                    partsql = "  and field0034 = 0  ";
                 }
                 //另外情况全查
                 //else
                 //Ffield0006 可为空 Ffield0009//已付
-                sql = $"select Ffield0005 as PayType,Ffield0007 as PayCode ,Ffield0008 as Amount ,FApplyName as ApplyName,(Ffield0008-Ffield0034)  as  Paid,Ffield0034 as Balance from [v3x].[dbo].[formmain_3460]  where   '{routeEntity.StartTime}' <= [FStart_Date]  and [FStart_Date] <= '{routeEntity.EndTime}' and Ffield0006 in ('{routeEntity.EmployeeIds}')  {partsql} order by FStart_Date desc";
+                sql = $"select field0005 as PayType,field0007 as PayCode ,t2.NAME as ApplyName, field0008 as Amount , (field0008-field0034)  as  Paid,field0034 as Balance from [v3x].[dbo].[formmain_3460]  t1 Left Join v3x.dbo.ORG_MEMBER t2 On t1.field0006= t2.ID   where   '{routeEntity.StartTime}' <= start_date  and start_date <= '{routeEntity.EndTime}' and field0006 in ('{routeEntity.EmployeeIds}')  {partsql} order by start_date desc";
                 dt = runner.ExecuteSql(sql);
                 foreach (DataRow item in dt.Rows)
                 {

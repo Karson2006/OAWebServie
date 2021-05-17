@@ -29,9 +29,9 @@ namespace TR.OA.BusHelper
             else
                 throw new Exception("EmployeeID节点不存在");
 
-            sql = @" Select ID,field0001,field0002,field0004,field0009,field0012,field0020,field0018,field0019,field0015,field0013
+            sql = @" Select ID,field0001,CONVERT(varchar(100), field0002, 23) field0002,field0004,field0009,field0012,field0020,field0018,field0019,field0015,field0013
                           From v3x.dbo.formmain_6185
-                          Where field0016 = {0}";
+                          Where field0016 = {0} and  field0009 <> '0'";
             sql = string.Format(sql, EmployeeeID);
             runner = new SQLServerHelper();
             DataTable dt = runner.ExecuteSql(sql);
@@ -54,8 +54,8 @@ namespace TR.OA.BusHelper
             else
                 throw new Exception("EmployeeID节点不存在");
 
-            sql = @" Select field0001, field0002,field0004,field0006,field0009,field0011,field0012,field0013,field0015,field0018,field0020,field0021,field0024,field0023
-                     from v3x.dbo.formmain_6187 Where field0016 = {0}";
+            sql = @" Select field0001, CONVERT(varchar(100), field0002, 23) field0002,field0004,field0006,field0009,field0011,field0012,field0013,field0015,field0018,field0020,field0021,field0024,field0023
+                     from v3x.dbo.formmain_6187 Where field0016 = {0} and  field0009 <> '0'";
             sql = string.Format(sql, EmployeeeID);
             runner = new SQLServerHelper();
             DataTable dt = runner.ExecuteSql(sql);
@@ -385,6 +385,7 @@ namespace TR.OA.BusHelper
                 string field0062 = "";  //付款方式
 
                 string field0064 = ""; //付款阶段
+                string field0099 = ""; //收款方式
                 string bankRows = "", hospitalRows = "";
 
                 #endregion 参数定义
@@ -577,6 +578,11 @@ namespace TR.OA.BusHelper
                     hospitalRows = hospitalRows + string.Format(hosRow, field24, field12,
                     field58, field42, field61, field24);
                 }
+
+                //Select ID AS FNumber, SHOWVALUE AS FName
+                //From v3x.dbo.CTP_ENUM_ITEM
+                //Where REF_ENUMID = '276358982949751036'
+                //        Order by SORTNUMBER ASc
                 //foreach (XmlNode row in nodes)
                 //{
                 //    //if (row["field0056"].InnerText.Trim().Length > 0)
@@ -614,7 +620,7 @@ namespace TR.OA.BusHelper
                 //node = doc.SelectSingleNode("UpdateData/field0047");
                 node = doc.SelectSingleNode("UpdateData/field0023");
                 if (node != null)
-                    field0047 = node.InnerText.Trim();
+                    field0047 = node.InnerText.Trim() == "" ? "0" : node.InnerText.Trim();
 
                 //if ((int.Parse(field0047) + int.Parse(field0023)) <= int.Parse(field0017))
                 //{
@@ -624,10 +630,19 @@ namespace TR.OA.BusHelper
                 //{
                 //    throw new Exception("报销金额不能与总金额");
                 //}
+
+                sql = "Select ID AS FNumber, SHOWVALUE AS FName From v3x.dbo.CTP_ENUM_ITEM Where REF_ENUMID = '276358982949751036'  Order by SORTNUMBER ASC";
+                DataTable bankTable = runner.ExecuteSql(sql);
+
                 //个人报销金额小于报销金额有第三方
+                int thirdpay = 0;
                 if (int.Parse(field0047) < int.Parse(field0023))
                 {
-                    int thirdpay = 0;
+                    if (bankTable.Select("报销与付款").Length > 0)
+                    {
+                        field0099 = bankTable.Select("报销与付款")[0]["FNumber"].ToString();
+                    }
+
                     Dictionary<string, string> bankDic = new Dictionary<string, string>();
 
                     string bankRow = @"<row><column name=""收款方""><value>{0}</value></column>
@@ -663,14 +678,39 @@ namespace TR.OA.BusHelper
                     }
                     //总金额和个人报销金额 + 第三方付款不相等
 
-                    if (int.Parse(field0023) < (int.Parse(field0047) + thirdpay))
+                    if (int.Parse(field0023) != (int.Parse(field0047) + thirdpay))
                     {
-                        throw new Exception("个人报销金额加第三方付款金额不能大于总金额");
+                        throw new Exception("个人报销金额加第三方付款金额必须等于总金额");
+                    }
+                    if (int.Parse(field0023) == int.Parse(field0047))
+                    {
+                        if (bankTable.Select("他方付款").Length > 0)
+                        {
+                            field0099 = bankTable.Select("他方付款")[0]["FNumber"].ToString();
+                        }
+                    }
+                    else
+                    {
+                        if (bankTable.Select("报销与付款").Length > 0)
+                        {
+                            field0099 = bankTable.Select("报销与付款")[0]["FNumber"].ToString();
+                        }
                     }
                     //foreach (XmlNode row in nodes)
                     //{
                     //    bankRows = bankRows + string.Format(bankRow, row["field0048"].InnerText, row["field0049"].InnerText, row["field0050"].InnerText, row["field0051"].InnerText);
                     //}
+                }
+                //没有第三方付款
+                else if (int.Parse(field0047) == int.Parse(field0023))
+                {
+                    if (bankTable.Select("个人报销").Length > 0)
+                    {
+                        field0099 = bankTable.Select("个人报销")[0]["FNumber"].ToString();
+                    }
+                }
+                else if (field0047.Trim().Length == 0 || int.Parse(field0047) == 0)
+                {
                 }
                 else
                 {
@@ -839,7 +879,7 @@ namespace TR.OA.BusHelper
                                     <column name=""是否按计划""><value>{field0044}</value></column>
                                     <column name=""费用类型""><value>学术活动费</value></column>
                                     <column name=""个人报销金额""><value>{field0047}</value></column>
-                                    <column name=""收款方式""><value>0</value></column>
+                                    <column name=""收款方式""><value>{field0099}</value></column>
                                     <column name=""费用来源""><value>{field0063}</value></column>
                                     <column name=""付款阶段""><value>{field0064}</value></column>
                                     <column name=""可用额""><value>{field0053}</value></column>
@@ -1004,7 +1044,7 @@ namespace TR.OA.BusHelper
             //初始化状态
             //   result = string.Format(FormatResult, callType, "\"False\"", "", "");
             //每个DataRow格式
-            string rowcontent = "{{\"dataSets\":[{{\"values\":[{{ \"value\": {0}, \"label\": \"\"}},{{ \"value\": {1}, \"label\":\"\"}}],\"label\":\"\",\"config\": {2}}}],\"name\": \"{3}\",\"Index\":\"{4}\",\"value\":\"{5}\",\"Count\":\"{6}\",\"startTime\":\"{7}\",\"endTime\":\"{8}\"}}";
+            string rowcontent = "{{\"dataSets\":[{{\"values\":[{{ \"value\": {0}, \"label\": \"\"}},{{ \"value\": {1}, \"label\":\"\"}}],\"label\":\"\",\"config\": {2}}}],\"name\": \"{3}\",\"Index\":\"{4}\",\"value\":\"{5}\",\"Count\":\"{6}\",\"startTime\":\"{7}\",\"endTime\":\"{8}\",\"valid\":\"VALID\",\"invalid\":\"INVALID\"}}";
             //dataString = "{\"FWeekIndex\":\"10\",\"AuthCode\":\"1d340262-52e0-413f-b0e7-fc6efadc2ee5\",\"EmployeeID\":\"4255873149499886263\",\"BeginDate\":\"2020-08-05\",\"EndDate\":\"2020-08-31\"}";
             try
             {
@@ -1136,6 +1176,8 @@ namespace TR.OA.BusHelper
                     routeconfig = Common.GetCompassConfigFromXml("Route").Replace("Quot", "\"");
                     //DataRow数据
                     tempresult = string.Format(rowContent, per, (100 - per), routeconfig, viewName, viewType, per + "%", total.ToString(), startTime, endTime);
+                    tempresult = tempresult.Replace("VALID", okcount.ToString());
+                    tempresult = tempresult.Replace("INVALID", (total - okcount).ToString());
                 }
                 else
                 {
@@ -1149,6 +1191,9 @@ namespace TR.OA.BusHelper
             {
                 throw err;
             }
+            tempresult = tempresult.Replace("VALID", "0");
+
+            tempresult = tempresult.Replace("INVALID", "0");
             return tempresult;
         }
 

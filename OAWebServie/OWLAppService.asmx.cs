@@ -280,7 +280,14 @@ namespace TR.OAWebServie
             result = GetCompassReport(JsonMessage, "GetPersonSummaryReport");
             return result;
         }
-
+        //新版本一级个人页面
+        [WebMethod]
+        public string NewGetPersonSummaryReport(string JsonMessage)
+        {
+            string result = "";
+            result = GetCompassReport(JsonMessage, "GetPersonSummaryReport",true);
+            return result;
+        }
         //流程子页面
         [WebMethod]
         public string GetPersonFlowReport(string JsonMessage)
@@ -316,9 +323,18 @@ namespace TR.OAWebServie
             result = GetCompassReport(JsonMessage, "PayQuery");
             return result;
         }
+        //支付查询
+        [WebMethod]
+        public string NewPayQuery(string JsonMessage)
+        {
+            string result = "";
+            result = GetCompassReport(JsonMessage, "NewPayQuery");
+            return result;
+        }
+
 
         //报表统一入口
-        public string GetCompassReport(string JsonMessage, string callType)
+        public string GetCompassReport(string JsonMessage, string callType,bool newQuery=false)
         {
             string result, FormatResult = "{{\"{0}\":{{\"Result\":{1},\"Description\":{2},\"DataRows\":{3} }} }}";
             result = string.Format(FormatResult, callType, "\"False\"", "", "");
@@ -338,7 +354,7 @@ namespace TR.OAWebServie
                     {
                         //    OWLBusHelper perRpt = new OWLBusHelper();
                         //没有类型判断，全部获取
-                        result = perRpt.GetPersonSummaryReport(JsonMessage, FormatResult, callType);
+                        result = perRpt.GetPersonSummaryReport(JsonMessage, FormatResult, callType, newQuery);
                     }
                     //流程子页面
                     else if (callType == "GetPersonFlowReport")
@@ -350,7 +366,7 @@ namespace TR.OAWebServie
                     else if (callType == "GetPersonPayReport")
                     {
                         OWLBusHelper perChildRpt = new OWLBusHelper();
-                        result = perChildRpt.GetComPassChildData(JsonMessage, FormatResult, callType, "4");
+                        result = perChildRpt.GetComPassChildData(JsonMessage, FormatResult, callType, "4",newQuery);
                     }
                     //销量子页面
                     else if (callType == "GetPersonSalesReport")
@@ -363,6 +379,12 @@ namespace TR.OAWebServie
                     {
                         OWLBusHelper perChildRpt = new OWLBusHelper();
                         result = perChildRpt.PayQuery(JsonMessage, FormatResult, callType);
+                    }
+                    //支付查询
+                    else if (callType == "NewPayQuery")
+                    {
+                        OWLBusHelper perChildRpt = new OWLBusHelper();
+                        result = perChildRpt.NewPayQuery(JsonMessage, FormatResult, callType);
                     }
                 }
             }

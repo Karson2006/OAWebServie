@@ -301,6 +301,14 @@ namespace TR.OAWebServie
             return result;
         }
 
+        [WebMethod]
+        public string NewGetPersonPayReport(string JsonMessage)
+        {
+            string result = "";
+            result = GetCompassReport(JsonMessage, "GetPersonPayReport",true);
+            return result;
+        }
+
         //销量子页面
         [WebMethod]
         public string GetPersonSalesReport(string JsonMessage)

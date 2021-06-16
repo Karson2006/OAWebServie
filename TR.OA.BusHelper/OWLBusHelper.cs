@@ -1382,14 +1382,14 @@ namespace TR.OA.BusHelper
                 //未支付 只看应付余额是否为0
                 if (string.IsNullOrEmpty(routeEntity.FormName))
                 {
-                    partsql = $"  and field0005 = '{routeEntity.FormName}'  ";
+                    partsql = $"  and field0001   like  '%{routeEntity.FormName}%'  ";
                 }
- 
-                //另外情况全查
+
+                //另外情况全查 field0014
                 //else
                 //Ffield0006 可为空 Ffield0009//已付
                 sql = $@"SELECT field0001 as PayType, t2.NAME as ApplyName,ISNULL(t1.field0005,0) AS PerAmount,ISNULL(t1.field0009,0) Amount,ISNULL(t1.field0010,0) AS      LockedAmount,ISNULL(field0011,0) as AvaAmount,ISNULL(field0017,0) AS Paid
-                    from[v3x].[dbo].[formmain_8676] t1 LEFT JOIN v3x.dbo.ORG_MEMBER t2 On t1.field0014 = t2.ID   where   '{routeEntity.StartTime}' <= start_date  and start_date <= '{routeEntity.EndTime}' and field0006 in ('{routeEntity.EmployeeIds}')  {partsql} order by start_date desc";
+                    from[v3x].[dbo].[formmain_8676] t1 LEFT JOIN v3x.dbo.ORG_MEMBER t2 On t1.field0014 = t2.ID   where   '{routeEntity.StartTime}' <= start_date  and start_date <= '{routeEntity.EndTime}' and field0014 in ('{routeEntity.EmployeeIds}')  {partsql} order by start_date desc";
                                     dt = runner.ExecuteSql(sql);
                 foreach (DataRow item in dt.Rows)
                 {

@@ -344,14 +344,7 @@ namespace TR.OAWebServie
             return result;
         }
 
-        //新版本一级个人页面
-        [WebMethod]
-        public string  GetPersonSummaryReport2(string JsonMessage)
-        {
-            string result = "";
-            result = GetCompassReport(JsonMessage, "GetPersonSummaryReport", true);
-            return result;
-        }
+ 
         //报表统一入口
         public string GetCompassReport(string JsonMessage, string callType,bool newQuery=false)
         {

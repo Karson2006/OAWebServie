@@ -1143,7 +1143,7 @@ namespace TR.OA.BusHelper
                         viewName = "支付";
                         if (newQuery)
                         {
-                            sql = $"SELECT SUM(isnull(field0005, 0 )) Total,SUM(ISNULL(field0011,0)) OKCount FROM [v3x].[dbo].[formmain_8676] t1 LEFT JOIN v3x.dbo.ORG_MEMBER t2 ON t1.field0014 = t2.ID where'{startTime}' <= t1.start_date and t1.start_date <= '{endTime}' and t1.field0014 in ('{EmployeeId}')";
+                            sql = $"SELECT SUM(isnull(field0005, 0 )) Total,SUM(ISNULL(field0005,0)-ISNULL(field0011,0)) OKCount FROM [v3x].[dbo].[formmain_8676] t1 LEFT JOIN v3x.dbo.ORG_MEMBER t2 ON t1.field0014 = t2.ID where'{startTime}' <= t1.start_date and t1.start_date <= '{endTime}' and t1.field0014 in ('{EmployeeId}')";
                         }
                         else
                         {
@@ -1257,12 +1257,12 @@ namespace TR.OA.BusHelper
                         if (newQuery)
                         {
                             //Ffield0006 可为空
-                            sql = $@"SELECT field0001 as PayType, t2.NAME as ApplyName,ISNULL(t1.field0005,0) AS PerAmount,ISNULL(t1.field0009,0) Amount,ISNULL(t1.field0010,0) AS      LockedAmount,ISNULL(field0011,0) as AvaAmount,ISNULL(field0017,0) AS Paid
+                            sql = $@"SELECT field0001 as PayType,field0002 as PayCode , t2.NAME as ApplyName,ISNULL(t1.field0005,0) AS PerAmount,ISNULL(t1.field0009,0) Amount,ISNULL(t1.field0010,0) AS      LockedAmount,ISNULL(field0011,0) as AvaAmount,ISNULL(field0017,0) AS Paid
                     from[v3x].[dbo].[formmain_8676] t1 LEFT JOIN v3x.dbo.ORG_MEMBER t2 On t1.field0014 = t2.ID  where   '{startTime}' <= start_date  and start_date <= '{endTime}' and field0014 in ('{routeEntity.EmployeeIds}') order by start_date desc";
                             dt = runner.ExecuteSql(sql);
                             foreach (DataRow item in dt.Rows)
                             {
-                                rowcontent = "{\"Year\":\"" + DateTime.Now.ToString("yyyy") + "\",\"PayType\":\"" + item["PayType"] + "\",\"PerAmount\":\"" + item["PerAmount"] + "\",\"ApplyName\":\"" + item["ApplyName"] + "\",\"Paid\":\"" + item["Paid"] + "\",\"Amount\":\"" + item["Amount"] + "\",\"AvaAmount\":\"" + item["AvaAmount"] + "\",\"startTime\":\"" + startTime.ToString("yyyyMMdd") + "\",\"endTime\":\"" + endTime.ToString("yyyyMMdd") + "\"}";
+                                rowcontent = "{\"Year\":\"" + DateTime.Now.ToString("yyyy") + "\",\"PayType\":\"" + item["PayType"] + "\",\"PayCode\":\"" + item["PayCode"] + "\",\"PerAmount\":\"" + item["PerAmount"] + "\",\"ApplyName\":\"" + item["ApplyName"] + "\",\"Paid\":\"" + item["Paid"] + "\",\"Amount\":\"" + item["Amount"] + "\",\"AvaAmount\":\"" + item["AvaAmount"] + "\",\"startTime\":\"" + startTime.ToString("yyyyMMdd") + "\",\"endTime\":\"" + endTime.ToString("yyyyMMdd") + "\"}";
                                 rowList.Add(rowcontent);
                             }
                         }

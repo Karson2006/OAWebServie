@@ -1,5 +1,6 @@
 ﻿using iTR.Lib;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -1036,6 +1037,10 @@ namespace TR.OA.BusHelper
 
         public string GetPersonSummaryReport(string dataString, string FormatResult, string callType,bool newQuery=false)
         {
+            if (JObject.Parse(dataString)["Mode"]?.ToString() == "1")
+            {
+                newQuery = true;
+            }
             FormatResult = "{{\"{0}\":{{\"Result\":{1},\"Description\":{2},\"DataRows\":{3} }} }}";
             string result = string.Format(FormatResult, callType, "\"False\"", "", "");
             //加,连接起前面的json字符串

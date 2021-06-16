@@ -5,6 +5,8 @@ using System.Web;
 using System.Web.Services;
 using TR.OA.BusHelper;
 using iTR.Lib;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace TR.OAWebServie
 {
@@ -345,6 +347,9 @@ namespace TR.OAWebServie
         //报表统一入口
         public string GetCompassReport(string JsonMessage, string callType,bool newQuery=false)
         {
+            
+
+            
             string result, FormatResult = "{{\"{0}\":{{\"Result\":{1},\"Description\":{2},\"DataRows\":{3} }} }}";
             result = string.Format(FormatResult, callType, "\"False\"", "", "");
             string logID = Guid.NewGuid().ToString();
@@ -361,7 +366,7 @@ namespace TR.OAWebServie
                     //罗盘主页
                     if (callType == "GetPersonSummaryReport")
                     {
-                        //    OWLBusHelper perRpt = new OWLBusHelper();
+                        //OWLBusHelper perRpt = new OWLBusHelper();
                         //没有类型判断，全部获取
                         result = perRpt.GetPersonSummaryReport(JsonMessage, FormatResult, callType, newQuery);
                     }

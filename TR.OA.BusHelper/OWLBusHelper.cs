@@ -1138,8 +1138,9 @@ namespace TR.OA.BusHelper
                         viewName = "支付";
                         if (newQuery)
                         {
-                            sql = $"SELECT SUM(isnull(field0005, 0 )) Total,SUM(ISNULL(field00011)) OKCount FROM [v3x].[dbo].[formmain_8676] t1 LEFT JOIN v3x.dbo.ORG_MEMBER t2 ON t1.field0006 = t2.ID where'{startTime}' <= t1.start_date and t1.start_date <= '{endTime}' and t1.field0014 in ('{EmployeeId}')";
+                            sql = $"SELECT SUM(isnull(field0005, 0 )) Total,SUM(ISNULL(field0011,0)) OKCount FROM [v3x].[dbo].[formmain_8676] t1 LEFT JOIN v3x.dbo.ORG_MEMBER t2 ON t1.field0014 = t2.ID where'{startTime}' <= t1.start_date and t1.start_date <= '{endTime}' and t1.field0014 in ('{EmployeeId}')";
                         }
+                        else
                         {
                             sql = $"SELECT SUM(isnull(field0008, 0 )) Total,SUM(ISNULL(field0008,0) -ISNULL(field0034,0)) OKCount FROM [v3x].[dbo].[formmain_3460] t1 LEFT JOIN v3x.dbo.ORG_MEMBER t2 ON t1.field0006 = t2.ID where'{startTime}' <= t1.start_date and t1.start_date <= '{endTime}' and t1.field0006 in ('{EmployeeId}')";
                         }

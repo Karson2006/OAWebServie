@@ -1035,7 +1035,7 @@ namespace TR.OA.BusHelper
 
         #region 罗盘主页数据
 
-        public string GetPersonSummaryReport(string dataString, string FormatResult, string callType,bool newQuery=false)
+        public string GetPersonSummaryReport(string dataString, string FormatResult, string callType, bool newQuery = false)
         {
             if (JObject.Parse(dataString)["Mode"]?.ToString() == "1")
             {
@@ -1080,7 +1080,7 @@ namespace TR.OA.BusHelper
                     //主要区分返回格式 和时间查询问题
                     if (i == 3 || i == 4)
                     {
-                        rdataRow = GetDataRow(i, rowcontent, routeEntity.EmployeeId, startTime.ToString("yyyy-MM-dd"), endTime.ToString("yyyy-MM-dd"), "",newQuery);
+                        rdataRow = GetDataRow(i, rowcontent, routeEntity.EmployeeId, startTime.ToString("yyyy-MM-dd"), endTime.ToString("yyyy-MM-dd"), "", newQuery);
                         dataRowList.Add(rdataRow);
                     }
                     else if (i == 6)
@@ -1114,7 +1114,7 @@ namespace TR.OA.BusHelper
         /// <param name="type">1,签到，2,拜访，3,流程，4,待定,5,艾夫吉夫 6,丙戊酸钠 7,待支付金额，8，奖金</param>
         /// <param name="YearOrWeek">按年查或者按周查，按年查比较特殊，sql语句会有变化</param>
         /// <returns></returns>
-        public string GetDataRow(int viewType, string rowContent, string EmployeeId, string startTime, string endTime, string yearweek,bool newQuery =false)
+        public string GetDataRow(int viewType, string rowContent, string EmployeeId, string startTime, string endTime, string yearweek, bool newQuery = false)
         {
             string sql = "", viewName = "", tempresult = "", routeconfig, p1, p2, partsql;
             int total, okcount, per;
@@ -1215,7 +1215,7 @@ namespace TR.OA.BusHelper
         #region 罗盘子页数据
 
         //自定义》1,签到，2,拜访，3,流程，4,待定,5,艾夫吉夫 6,丙戊酸钠 7,待支付金额，8，奖金
-        public string GetComPassChildData(string dataString, string FormatResult, string callType, string childtype,bool newQuery =false)
+        public string GetComPassChildData(string dataString, string FormatResult, string callType, string childtype, bool newQuery = false)
         {
             int childType = int.Parse(childtype);
             string sql = "", result = "", yearweek, weekindex = ",\"FWeekIndex\":";
@@ -1380,7 +1380,7 @@ namespace TR.OA.BusHelper
             {
                 RouteEntity routeEntity = JsonConvert.DeserializeObject<RouteEntity>(dataString);
                 //未支付 只看应付余额是否为0
-                if (string.IsNullOrEmpty(routeEntity.FormName))
+                if (!string.IsNullOrEmpty(routeEntity.FormName))
                 {
                     partsql = $"  and field0001   like  '%{routeEntity.FormName}%'  ";
                 }
@@ -1388,13 +1388,34 @@ namespace TR.OA.BusHelper
                 //另外情况全查 field0014
                 //else
                 //Ffield0006 可为空 Ffield0009//已付
-                sql = $@"SELECT field0001 as PayType, t2.NAME as ApplyName,ISNULL(t1.field0005,0) AS PerAmount,ISNULL(t1.field0009,0) Amount,ISNULL(t1.field0010,0) AS      LockedAmount,ISNULL(field0011,0) as AvaAmount,ISNULL(field0017,0) AS Paid
+                sql = $@"SELECT field0001 as PayType,field0002 as PayCode , t2.NAME as ApplyName,ISNULL(t1.field0005,0) AS PerAmount,ISNULL(t1.field0009,0) Amount,ISNULL(t1.field0010,0) AS      LockedAmount,ISNULL(field0011,0) as AvaAmount,ISNULL(field0017,0) AS Paid
                     from[v3x].[dbo].[formmain_8676] t1 LEFT JOIN v3x.dbo.ORG_MEMBER t2 On t1.field0014 = t2.ID   where   '{routeEntity.StartTime}' <= start_date  and start_date <= '{routeEntity.EndTime}' and field0014 in ('{routeEntity.EmployeeIds}')  {partsql} order by start_date desc";
-                                    dt = runner.ExecuteSql(sql);
+                dt = runner.ExecuteSql(sql);
                 foreach (DataRow item in dt.Rows)
                 {
-                    rowcontent = "{\"Year\":\"" + DateTime.Now.ToString("yyyy") + "\",\"PayType\":\"" + item["PayType"] + "\",\"PerAmount\":\"" + item["PerAmount"] + "\",\"ApplyName\":\"" + item["ApplyName"] + "\",\"Paid\":\"" + item["Paid"] + "\",\"Amount\":\"" + item["Amount"] + "\",\"LockedAmount\":\"" + item["LockedAmount"] + "\",\"startTime\":\"" + routeEntity.StartTime + "\",\"endTime\":\"" + routeEntity.EndTime + "\"}";
-                    rowList.Add(rowcontent);
+                    rowcontent = "{\"Year\":\"" + DateTime.Now.ToString("yyyy") + "\",\"PayType\":\"" + item["PayType"] + "\",\"PayCode\":\"" + item["PayCode"] + "\",\"PerAmount\":\"" + item["PerAmount"] + "\",\"ApplyName\":\"" + item["ApplyName"] + "\",\"Paid\":\"" + item["Paid"] + "\",\"Amount\":\"" + item["Amount"] + "\",\"LockedAmount\":\"" + item["LockedAmount"] + "\",\"startTime\":\"" + routeEntity.StartTime + "\",\"endTime\":\"" + routeEntity.EndTime + "\"}";
+
+                    if (routeEntity.FilterType == "-1")
+                    {
+                        //未支付 -1
+                        if (Convert.ToInt32(item["PerAmount"]) >= Convert.ToInt32(item["Amount"]) && Convert.ToInt32(item["Amount"]) != 0)
+                        {
+                            rowList.Add(rowcontent);
+                        }
+                    }
+                    else if (routeEntity.FilterType == "1")
+                    {                    //已支付 1
+                        if (Convert.ToInt32(item["Amount"]) == 0)
+                        {
+                            rowList.Add(rowcontent);
+                        }
+                    }
+                    else
+                    {
+                        rowList.Add(rowcontent);
+                    }
+
+
                 }
                 dataRow = string.Join(",", rowList.ToArray());
                 //最后结果

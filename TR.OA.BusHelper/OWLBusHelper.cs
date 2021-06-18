@@ -1188,7 +1188,7 @@ namespace TR.OA.BusHelper
                     // 药瑞宝已经获取 获取配置文件
                     routeconfig = Common.GetCompassConfigFromXml("Route").Replace("Quot", "\"");
                     //DataRow数据
-                    tempresult = string.Format(rowContent, per, (100 - per), routeconfig, viewName, viewType, per + "%", total.ToString(), startTime, endTime);
+                    tempresult = string.Format(rowContent, per, (100 - per), routeconfig, viewName, viewType, per + "%", (dt.Rows[0]["Total"] == DBNull.Value) ? "0" : dt.Rows[0]["Total"].ToString(), startTime, endTime);
                     tempresult = tempresult.Replace("VALID", okcount.ToString());
                     tempresult = tempresult.Replace("INVALID", (total - okcount).ToString());
                 }

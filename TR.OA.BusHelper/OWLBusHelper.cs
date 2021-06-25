@@ -1143,11 +1143,11 @@ namespace TR.OA.BusHelper
                         viewName = "支付";
                         if (newQuery)
                         {
-                            sql = $"SELECT SUM(isnull(field0005, 0 )) Total,SUM(ISNULL(field0005,0)-ISNULL(field0011,0)) OKCount FROM [v3x].[dbo].[formmain_8676] t1 LEFT JOIN v3x.dbo.ORG_MEMBER t2 ON t1.field0014 = t2.ID where'{startTime}' <= t1.start_date and t1.start_date <= '{endTime}' and t1.field0014 in ('{EmployeeId}')";
+                            sql = $"SELECT SUM(isnull(field0005, 0 )) Total,SUM(ISNULL(field0005,0)-ISNULL(field0011,0)) OKCount FROM [v3x].[dbo].[formmain_8676] t1 LEFT JOIN v3x.dbo.ORG_MEMBER t2 ON t1.field0014 = t2.ID where'{startTime}' <= t1.field0008 and t1.field0008 <= '{endTime}' and t1.field0014 in ('{EmployeeId}')";
                         }
                         else
                         {
-                            sql = $"SELECT SUM(isnull(field0008, 0 )) Total,SUM(ISNULL(field0008,0) -ISNULL(field0034,0)) OKCount FROM [v3x].[dbo].[formmain_3460] t1 LEFT JOIN v3x.dbo.ORG_MEMBER t2 ON t1.field0006 = t2.ID where'{startTime}' <= t1.start_date and t1.start_date <= '{endTime}' and t1.field0006 in ('{EmployeeId}')";
+                            sql = $"SELECT SUM(isnull(field0008, 0 )) Total,SUM(ISNULL(field0008,0) -ISNULL(field0034,0)) OKCount FROM [v3x].[dbo].[formmain_3460] t1 LEFT JOIN v3x.dbo.ORG_MEMBER t2 ON t1.field0006 = t2.ID where'{startTime}' <= t1.field0008 and t1.field0008 <= '{endTime}' and t1.field0006 in ('{EmployeeId}')";
                         }
 
                         //sql = $"SELECT  isnull( [field0002], '' ) field0002, isnull( [field0004], '' ) field0004, isnull( [field0005], '' ) field0005, isnull(field0006, '') field0006, t2.NAME AS FApplyName, isnull( [field0007], '' ) field0007, isnull( [field0008], 0 ) field0008, isnull( [field0009], 0 ) field0009, isnull( [field0013], '' ) field0013, isnull( [field0014], '' ) field0014, isnull( [field0031], '' ) field0031, isnull( [field0032], '' ) field0032, isnull( [field0033], '' ) field0033, isnull( [field0034], 0 ) field0034, isnull( [field0035], '' ) field0035, t1.ID AS ID, isnull(t1.start_date, '') AS Start_Date FROM [v3x].[dbo].[formmain_3460] t1 LEFT JOIN v3x.dbo.ORG_MEMBER t2 ON t1.field0006 = t2.ID  where  '{startTime}' <= t1.start_date  and t1.start_date <= '{startTime}' and t1.field0006 in ('{EmployeeId}')";
@@ -1258,7 +1258,7 @@ namespace TR.OA.BusHelper
                         {
                             //Ffield0006 可为空
                             sql = $@"SELECT field0001 as PayType,field0002 as PayCode , t2.NAME as ApplyName,ISNULL(t1.field0005,0) AS PerAmount,ISNULL(t1.field0009,0) Amount,ISNULL(t1.field0010,0) AS      LockedAmount,ISNULL(field0011,0) as AvaAmount,ISNULL(field0017,0) AS Paid
-                    from[v3x].[dbo].[formmain_8676] t1 LEFT JOIN v3x.dbo.ORG_MEMBER t2 On t1.field0014 = t2.ID  where   '{startTime}' <= start_date  and start_date <= '{endTime}' and field0014 in ('{routeEntity.EmployeeIds}') order by start_date desc";
+                    from[v3x].[dbo].[formmain_8676] t1 LEFT JOIN v3x.dbo.ORG_MEMBER t2 On t1.field0014 = t2.ID  where   '{startTime}' <= field0008  and field0008 <= '{endTime}' and field0014 in ('{routeEntity.EmployeeIds}') order by field0008 desc";
                             dt = runner.ExecuteSql(sql);
                             foreach (DataRow item in dt.Rows)
                             {
@@ -1348,7 +1348,7 @@ namespace TR.OA.BusHelper
                 //另外情况全查
                 //else
                 //Ffield0006 可为空 Ffield0009//已付
-                sql = $"select field0005 as PayType,field0007 as PayCode ,t2.NAME as ApplyName, field0008 as Amount , (field0008-field0034)  as  Paid,field0034 as Balance from [v3x].[dbo].[formmain_3460]  t1 Left Join v3x.dbo.ORG_MEMBER t2 On t1.field0006= t2.ID   where   '{routeEntity.StartTime}' <= start_date  and start_date <= '{routeEntity.EndTime}' and field0006 in ('{routeEntity.EmployeeIds}')  {partsql} order by start_date desc";
+                sql = $"select field0005 as PayType,field0007 as PayCode ,t2.NAME as ApplyName, field0008 as Amount , (field0008-field0034)  as  Paid,field0034 as Balance from [v3x].[dbo].[formmain_3460]  t1 Left Join v3x.dbo.ORG_MEMBER t2 On t1.field0006= t2.ID   where   '{routeEntity.StartTime}' <= start_date  and start_date <= '{routeEntity.EndTime}' and field0006 in ('{routeEntity.EmployeeIds}')  {partsql} order by field0008 desc";
                 dt = runner.ExecuteSql(sql);
                 foreach (DataRow item in dt.Rows)
                 {
@@ -1368,6 +1368,8 @@ namespace TR.OA.BusHelper
         }
 
         #endregion 支付查询
+
+
         #region 修改之后新版本支付查询
 
         public string NewPayQuery(string dataString, string FormatResult, string callType)
@@ -1384,12 +1386,15 @@ namespace TR.OA.BusHelper
                 {
                     partsql = $"  and field0001   like  '%{routeEntity.FormName}%'  ";
                 }
-
+                if (!string.IsNullOrEmpty(routeEntity.FormCode))
+                {
+                    partsql += $"  and  field0002  like '%{routeEntity.FormCode}%'";
+                }
                 //另外情况全查 field0014
                 //else
                 //Ffield0006 可为空 Ffield0009//已付
                 sql = $@"SELECT field0001 as PayType,field0002 as PayCode , t2.NAME as ApplyName,ISNULL(t1.field0005,0) AS PerAmount,ISNULL(t1.field0009,0) Amount,ISNULL(t1.field0010,0) AS      LockedAmount,ISNULL(field0011,0) as AvaAmount,ISNULL(field0017,0) AS Paid
-                    from[v3x].[dbo].[formmain_8676] t1 LEFT JOIN v3x.dbo.ORG_MEMBER t2 On t1.field0014 = t2.ID   where   '{routeEntity.StartTime}' <= start_date  and start_date <= '{routeEntity.EndTime}' and field0014 in ('{routeEntity.EmployeeIds}')  {partsql} order by start_date desc";
+                    from[v3x].[dbo].[formmain_8676] t1 LEFT JOIN v3x.dbo.ORG_MEMBER t2 On t1.field0014 = t2.ID   where   '{routeEntity.StartTime}' <= field0008  and field0008 <= '{routeEntity.EndTime}' and field0014 in ('{routeEntity.EmployeeIds}')  {partsql} order by start_date desc";
                 dt = runner.ExecuteSql(sql);
                 foreach (DataRow item in dt.Rows)
                 {
@@ -1398,7 +1403,7 @@ namespace TR.OA.BusHelper
                     if (routeEntity.FilterType == "-1")
                     {
                         //未支付 -1
-                        if (Convert.ToInt32(item["PerAmount"]) >= Convert.ToInt32(item["Amount"]) && Convert.ToInt32(item["Amount"]) != 0)
+                        if (Convert.ToInt32(item["PerAmount"]) == Convert.ToInt32(item["Amount"]))
                         {
                             rowList.Add(rowcontent);
                         }
@@ -1406,6 +1411,13 @@ namespace TR.OA.BusHelper
                     else if (routeEntity.FilterType == "1")
                     {                    //已支付 1
                         if (Convert.ToInt32(item["Amount"]) == 0)
+                        {
+                            rowList.Add(rowcontent);
+                        }
+                    }
+                    else if (routeEntity.FilterType == "3")
+                    {                    //部分支付 3
+                        if (Convert.ToInt32(item["PerAmount"]) != Convert.ToInt32(item["Amount"])&& Convert.ToInt32(item["Amount"])!=0)
                         {
                             rowList.Add(rowcontent);
                         }
@@ -1460,6 +1472,8 @@ namespace TR.OA.BusHelper
         public string FilterType { get; set; }
         //支付查询表单名称
         public string FormName { get; set; }
+        //支付查询单号
+        public string FormCode { get; set; }
     }
 
     #endregion 罗盘实体类

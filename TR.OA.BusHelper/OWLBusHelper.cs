@@ -1037,10 +1037,14 @@ namespace TR.OA.BusHelper
 
         public string GetPersonSummaryReport(string dataString, string FormatResult, string callType, bool newQuery = false)
         {
-            if (JObject.Parse(dataString)["Mode"]?.ToString() == "1")
+            if (JObject.Parse(dataString)["Mode"]!=null)
             {
-                newQuery = true;
+                if (JObject.Parse(dataString)["Mode"]?.ToString() == "1")
+                {
+                    newQuery = true;
+                }
             }
+
             FormatResult = "{{\"{0}\":{{\"Result\":{1},\"Description\":{2},\"DataRows\":{3} }} }}";
             string result = string.Format(FormatResult, callType, "\"False\"", "", "");
             //加,连接起前面的json字符串
@@ -1147,7 +1151,7 @@ namespace TR.OA.BusHelper
                         }
                         else
                         {
-                            sql = $"SELECT SUM(isnull(field0008, 0 )) Total,SUM(ISNULL(field0008,0) -ISNULL(field0034,0)) OKCount FROM [v3x].[dbo].[formmain_3460] t1 LEFT JOIN v3x.dbo.ORG_MEMBER t2 ON t1.field0006 = t2.ID where'{startTime}' <= t1.field0008 and t1.field0008 <= '{endTime}' and t1.field0006 in ('{EmployeeId}')";
+                            sql = $"SELECT SUM(isnull(field0008, 0 )) Total,SUM(ISNULL(field0008,0) -ISNULL(field0034,0)) OKCount FROM [v3x].[dbo].[formmain_3460] t1 LEFT JOIN v3x.dbo.ORG_MEMBER t2 ON t1.field0006 = t2.ID where  '{startTime}' <= t1.field0032 and t1.field0032 <= '{endTime}' and t1.field0006 in ('{EmployeeId}')";
                         }
 
                         //sql = $"SELECT  isnull( [field0002], '' ) field0002, isnull( [field0004], '' ) field0004, isnull( [field0005], '' ) field0005, isnull(field0006, '') field0006, t2.NAME AS FApplyName, isnull( [field0007], '' ) field0007, isnull( [field0008], 0 ) field0008, isnull( [field0009], 0 ) field0009, isnull( [field0013], '' ) field0013, isnull( [field0014], '' ) field0014, isnull( [field0031], '' ) field0031, isnull( [field0032], '' ) field0032, isnull( [field0033], '' ) field0033, isnull( [field0034], 0 ) field0034, isnull( [field0035], '' ) field0035, t1.ID AS ID, isnull(t1.start_date, '') AS Start_Date FROM [v3x].[dbo].[formmain_3460] t1 LEFT JOIN v3x.dbo.ORG_MEMBER t2 ON t1.field0006 = t2.ID  where  '{startTime}' <= t1.start_date  and t1.start_date <= '{startTime}' and t1.field0006 in ('{EmployeeId}')";

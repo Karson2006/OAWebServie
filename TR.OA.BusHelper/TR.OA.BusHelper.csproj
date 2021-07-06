@@ -46,6 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AuthHelper.cs" />
     <Compile Include="ItemBusHelper.cs" />
     <Compile Include="OWLBusHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

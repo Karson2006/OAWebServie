@@ -340,20 +340,22 @@ namespace TR.OAWebServie
         public string NewGetPersonSummaryReport(string JsonMessage)
         {
             string result = "";
-            result = GetCompassReport(JsonMessage, "GetPersonSummaryReport", true);
+            result = GetCompassReport(JsonMessage, "SaveAuthData", true);
             return result;
         }
 
         [WebMethod]
-        public string SaveAuthData(string JsonMessage)
+        public string SaveAuthData(string   JsonMessage)
         {
-            string result = "OK";
-           // result = GetCompassReport(JsonMessage, "GetPersonSummaryReport", true);
+            string result = "200";
+            JsonMessage = JsonMessage.Replace("\\", "");
+            result = GetCompassReport(JsonMessage, "SaveAuthData", true);
             return result;
         }
         //报表统一入口
         public string GetCompassReport(string JsonMessage, string callType,bool newQuery=false)
-        {                       
+        {
+
             string result, FormatResult = "{{\"{0}\":{{\"Result\":{1},\"Description\":{2},\"DataRows\":{3} }} }}";
             result = string.Format(FormatResult, callType, "\"False\"", "", "");
             string logID = Guid.NewGuid().ToString();
@@ -405,14 +407,13 @@ namespace TR.OAWebServie
                         result = perChildRpt.NewPayQuery(JsonMessage, FormatResult, callType);
                     }
                     //保存OA经营授权表
-                    else if (callType == "SaveAuthData")
+                    else if (callType ==  "SaveAuthData")
                     {
                         AuthHelper authHelper = new AuthHelper();
                         if (authHelper.SaveHospitalAuth(JsonMessage, FormatResult))
                         {
-                            return "Ok";
+                            return "200";
                         }
- 
                     }
                 }
             }

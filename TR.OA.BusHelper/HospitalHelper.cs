@@ -7,11 +7,110 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace TR.OA.BusHelper
 {
-    public class AuthHelper
+    public class HospitalHelper
     {
+        public HospitalHelper()
+        {
+
+        }
+        /// <summary>
+        /// 获取OA数据库中的医院列表
+        /// </summary>
+        /// <returns></returns>
+        public string GetOAHospitalList( string xmlString)
+        {
+
+            string result = "", sql = "", filter = " t1.FIsDeleted=0 ", val = "";
+            SQLServerHelper runner;
+
+            try
+            {
+                XmlDocument doc = new XmlDocument();
+                doc.LoadXml(xmlString);
+                XmlNode vNode = doc.SelectSingleNode("GetOAHospitalList/ID");
+                if (vNode != null)
+                {
+                    val = vNode.InnerText.Trim();
+                    if (val.Length > 0)
+                        filter = filter.Length > 0 ? filter = filter + " And t1.ID='" + val + "'" : "t1.ID='" + val + "'";
+                }
+                //医院名称
+                vNode = doc.SelectSingleNode("GetHospitalList/Name");
+                if (vNode != null)
+                {
+                    val = vNode.InnerText.Trim();
+                    if (val.Length > 0)
+                        filter = filter.Length > 0 ? filter = filter + " And t1.field0002 like '%" + val + "%'" : "t1.field0002 like '%" + val + "%'";
+                }
+                //医院代码
+                vNode = doc.SelectSingleNode("GetHospitalList/Number");
+                if (vNode != null)
+                {
+                    val = vNode.InnerText.Trim();
+                    if (val.Length > 0)
+                        filter = filter.Length > 0 ? filter = filter + " And t1.field0001 like '%" + val + "%'" : "t2.field0001 like '%" + val + "%'";
+                }
+               
+                //所在省市
+                vNode = doc.SelectSingleNode("GetHospitalList/ProvinceName");
+                if (vNode != null)
+                {
+                    val = vNode.InnerText.Trim();
+                    if (val.Length > 0)
+                        filter = filter.Length > 0 ? filter = filter + " And t1.field0005 like '%" + val + "%'" : " t1.field0005= '%" + val + "%'";
+                }
+                //所在地市
+                vNode = doc.SelectSingleNode("GetHospitalList/CityName");
+                if (vNode != null)
+                {
+                    val = vNode.InnerText.Trim();
+                    if (val.Length > 0)
+                        filter = filter.Length > 0 ? filter = filter + " And t1.field0010 like '%" + val + "%'" : " t1.field0010= '%" + val + "%'";
+                }
+
+
+                //社会信用代码Cod
+                vNode = doc.SelectSingleNode("GetHospitalList/CreditCode");
+                if (vNode != null)
+                {
+                    val = vNode.InnerText.Trim();
+                    if (val.Length > 0)
+                        filter = filter.Length > 0 ? filter = filter + " And t1.field0023 like '%" + val + "%'" : " t1.field0023 like '%" + val + "%'";
+                }
+
+                //经济性质
+                vNode = doc.SelectSingleNode("GetHospitalList/EconomicType");
+                if (vNode != null)
+                {
+                    val = vNode.InnerText.Trim();
+                    if (val.Length > 0)
+                        filter = filter.Length > 0 ? filter = filter + " And t1.field0030= '" + val + "'" : " t1.field0030= '" + val + "'";
+                }
+
+                sql = @"Select t1.ID FID, t1.field0001 FName,t1.field0002 FNumber,t1.field0004 FType,t1.field0005 FProvinceName,t1.field0010 FCityName,t1.field0011 FCountryName,
+                        (Case t1.field0008 When - 4875734478274671070 Then '是' Else '否' End) FStatus, t1.field0016 FRegisterName, t1.field0017 FAddress, t1.field0019 ,t1.field0020,t1.field0021,
+                        t1.field0022,t1.field0023,t1.field0024,t1.field0025,t1.field0026,t1.field0027,t1.field0028,t1.field0030
+                        From v3x.dbo.formmain_8044 t1";
+                if (filter.Length > 0)
+                    sql = sql + " Where " + filter;
+                sql = sql + " order by t1.field0002 Asc";
+
+                runner = new SQLServerHelper();
+                DataTable dt = runner.ExecuteSql(sql);
+                result = Common.DataTableToXml(dt, "GetHospitalList", "", "List");
+               
+            }
+            catch (Exception err)
+            {
+                throw err;
+            }
+            return result;
+        }
+    }
         /// <summary>
         /// 保存OA经营授权表
         /// </summary>

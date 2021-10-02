@@ -410,7 +410,10 @@ namespace TR.OAWebServie
                     else if (callType ==  "SaveAuthData")
                     {
                         AuthHelper authHelper = new AuthHelper();
-                        result = authHelper.SaveHospitalAuth(JsonMessage, FormatResult);
+                        if (authHelper.SaveHospitalAuth(JsonMessage, FormatResult))
+                        {
+                            return "200";
+                        }
                     }
                 }
             }
@@ -423,17 +426,6 @@ namespace TR.OAWebServie
         }
 
         #endregion 获取销量，支付，流程数据
-
-
-        [WebMethod]
-        public string GetOAHospitalList(string xmlString)
-        {
-           
-            FileLogger.WriteLog("XML：" + xmlString, 1, "OAWebService", "GetOAHospitalList", "DataService");
-            HospitalHelper h = new HospitalHelper();
-            string result = h.GetOAHospitalList(xmlString);
-            return result;
-        }
 
     }
 }

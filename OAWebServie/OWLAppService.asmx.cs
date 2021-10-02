@@ -425,15 +425,15 @@ namespace TR.OAWebServie
         #endregion 获取销量，支付，流程数据
 
 
+        #region 获取OA医院列表
         [WebMethod]
         public string GetOAHospitalList(string xmlString)
         {
-           
             FileLogger.WriteLog("XML：" + xmlString, 1, "OAWebService", "GetOAHospitalList", "DataService");
             HospitalHelper h = new HospitalHelper();
             string result = h.GetOAHospitalList(xmlString);
             return result;
         }
-
+        #endregion
     }
 }

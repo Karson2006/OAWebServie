@@ -435,5 +435,29 @@ namespace TR.OAWebServie
             return result;
         }
         #endregion
+
+        #region 获取OA医院列表
+        [WebMethod]
+        public string GetOAProductList(string xmlString)
+        {
+            FileLogger.WriteLog("XML：" + xmlString, 1, "OAWebService", "GetOAHospitalList", "DataService");
+            ItemBusHelper obj= new ItemBusHelper();
+            string result = obj.GetProductList(xmlString);
+            return result;
+        }
+        #endregion
+
+        #region 获取用户状态
+        [WebMethod]
+        public string GetRegStatusByMobile(string xmlString)
+        {
+            FileLogger.WriteLog("XML：" + xmlString, 1, "OAWebService", "GetRegStatusByMobile", "DataService");
+            ItemBusHelper obj = new ItemBusHelper();
+            string result = obj.GetProductList(xmlString);
+            return result;
+        }
+        #endregion
+
+
     }
 }

@@ -46,6 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="OrganizationlHelper.cs" />
     <Compile Include="HospitalHelper.cs" />
     <Compile Include="AuthHelper.cs" />
     <Compile Include="ItemBusHelper.cs" />

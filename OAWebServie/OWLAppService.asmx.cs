@@ -452,12 +452,23 @@ namespace TR.OAWebServie
         public string GetRegStatusByMobile(string xmlString)
         {
             FileLogger.WriteLog("XML：" + xmlString, 1, "OAWebService", "GetRegStatusByMobile", "DataService");
-            ItemBusHelper obj = new ItemBusHelper();
-            string result = obj.GetProductList(xmlString);
+            OrganizationlHelper obj = new OrganizationlHelper();
+            string result = obj.GetEmployeeStatus(xmlString);
             return result;
         }
         #endregion
 
+
+        #region 获取指定部门或部门主管的直接下属与部门
+        [WebMethod]
+        public string GetTeamMemberList(string xmlString)
+        {
+            FileLogger.WriteLog("XML：" + xmlString, 1, "OAWebService", "GetRegStatusByMobile", "DataService");
+            OrganizationlHelper obj = new OrganizationlHelper();
+            string result = obj.GetTeamMemberList(xmlString);
+            return result;
+        }
+        #endregion
 
     }
 }
